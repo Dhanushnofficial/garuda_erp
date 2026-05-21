@@ -50,7 +50,7 @@ const EditPO = () => {
 
   const fetchPO = async () => {
     try {
-      const docRef = doc(db, "deliveryChallan", id);
+      const docRef = doc(db, "purchaseOrders", id);
       const snapshot = await getDoc(docRef);
 
       if (snapshot.exists()) {
@@ -148,7 +148,7 @@ const EditPO = () => {
   const updatePO = async () => {
     try {
       // DUPLICATE MANIFEST CHECK
-      const snapshot = await getDocs(collection(db, "deliveryChallan"));
+      const snapshot = await getDocs(collection(db, "purchaseOrders"));
       const duplicate = snapshot.docs.find((item) => {
         const data = item.data();
         return data.poNumber === poData.poNumber && item.id !== id;
@@ -165,7 +165,7 @@ const EditPO = () => {
       const totalIGST = poData.products.reduce((acc, item) => acc + Number(item.igstAmount || 0), 0);
       const grandTotal = subtotal + totalCGST + totalIGST;
 
-      await updateDoc(doc(db, "deliveryChallan", id), {
+      await updateDoc(doc(db, "purchaseOrders", id), {
         ...poData,
         subtotal,
         totalCGST,
@@ -196,7 +196,7 @@ const EditPO = () => {
     if (!confirmDelete) return;
 
     try {
-      await deleteDoc(doc(db, "deliveryChallan", id));
+      await deleteDoc(doc(db, "purchaseOrders", id));
       alert("Purchase Order registry trace purged.");
       navigate("/history");
     } catch (error) {

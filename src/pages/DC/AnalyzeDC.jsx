@@ -17,7 +17,6 @@ import {
   Cell
 } from "recharts";
 import {
-  FaChartPie,
   FaFileInvoice,
   FaClipboardList,
   FaBoxes,
