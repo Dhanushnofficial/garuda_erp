@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { FaArrowLeft, FaPrint, FaEye } from "react-icons/fa";
 import { db } from "../../../firebase/firebase";
 import logo from "../../../assets/logo_1.png";
+import logo_watermark from "../../../assets/logo_watermark.png";
 
 const DCPreview = () => {
   // =========================================
@@ -170,8 +171,8 @@ const DCPreview = () => {
               }}
             >
               {/* INLINE WATERMARK LAYER BACKGROUND */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none print:opacity-[0.02]">
-                <img src={logo} alt="Watermark Core Reference" className="w-[480px] object-contain" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.7] pointer-events-none select-none print:opacity-[0.02]">
+                <img src={logo_watermark} alt="Watermark Core Reference" className="w-[480px] object-contain" />
               </div>
 
               {/* DYNAMIC FLOW CONTAINER CONTROLS */}
@@ -179,14 +180,14 @@ const DCPreview = () => {
                 
                 <div>
                   {/* TOP HEADER COMPONENT BLOCK */}
-                  <div className="flex justify-between items-start relative z-10 border-b border-slate-100 pb-4">
+                  <div className="flex justify-between items-start relative z-10 border-b border-slate-100 pb-1" style={{justifyContent:'center'}}>
                     <div />
                     <div className="text-right">
-                      <img src={logo} alt="Garuda Brand Logo" className="h-20 w-auto object-contain max-w-[200px]" />
-                      <div className="text-[12px] mt-1 text-slate-500 font-sans font-bold tracking-wide">
+                      <img src={logo} alt="Garuda Brand Logo" className="h-20 w-auto object-contain max-w-[200px] " />
+                      {/* <div className="text-[12px] mt-1 text-slate-500 font-sans font-bold tracking-wide flex ">
                         <p>CIN: U74900TN2015PLC102474</p>
                         <p>GSTIN: 33AAGCG1621A1ZG</p>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 

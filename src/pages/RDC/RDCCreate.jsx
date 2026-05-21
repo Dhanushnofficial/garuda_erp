@@ -16,6 +16,7 @@ import {
 
 import { db } from "../../firebase/firebase";
 import logo from "../../assets/Dc_logo.png";
+import logo_watermark from "../../assets/logo_watermark.png";
 
 const CreateRDC = () => {
   // =====================================
@@ -476,168 +477,316 @@ const CreateRDC = () => {
 
           <div className="bg-[#D1D5DB] p-8 rounded-[40px] border border-slate-300 overflow-x-auto flex justify-center shadow-inner">
             <div
-              ref={pdfRef}
-              className="bg-white shadow-2xl"
-              style={{
-                width: "210mm",
-                minHeight: "297mm",
-                padding: "18px 20px",
-                fontFamily: "'Times New Roman', Times, serif",
-              }}
-            >
-              {/* BRAND IMAGE BANNER CELL */}
-              <div className="border border-black">
-                <div className="flex justify-center py-4">
-                  <img src={logo} alt="Garuda Aerospace" className="max-w-[220px] object-contain" />
-                </div>
-              </div>
+  ref={pdfRef}
+  className="bg-white shadow-2xl relative overflow-hidden"
+  style={{
+    width: "210mm",
+    minHeight: "297mm",
+    padding: "18px 20px",
+    fontFamily: "'Times New Roman', Times, serif",
+  }}
+>
+  {/* WATERMARK BACKGROUND */}
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+    <img
+      src={logo_watermark}
+      alt="Watermark Master Map"
+      className="w-[480px] object-contain opacity-[0.8]"
+    />
+  </div>
 
-              {/* BRAND NAME TITLE BAR HEADER */}
-              <div className="border-x border-b border-black text-center font-bold text-[14px] uppercase tracking-wide py-1.5 bg-slate-50">
-                Returnable Delivery Challan
-              </div>
+  {/* ALL CONTENT */}
+  <div className="relative z-10">
+    
+    {/* BRAND IMAGE BANNER CELL */}
+    <div className="border border-black">
+      <div className="flex justify-center py-4">
+        <img
+          src={logo}
+          alt="Garuda Aerospace"
+          className="max-w-[220px] object-contain"
+        />
+      </div>
+    </div>
 
-              {/* ASSIGNED ADDRESS INFRASTRUCTURE SCHEME ROW GRID */}
-              <table className="w-full border-collapse text-[12px] table-fixed">
-                <tbody>
-                  <tr>
-                    {/* FROM ZONE */}
-                    <td className="border-l border-b border-r border-black align-top p-2.5 w-[50%] leading-5">
-                      <span className="font-bold block uppercase text-[10px] text-slate-400 tracking-wider">FROM,</span>
-                      <div className="whitespace-pre-line text-slate-900 font-medium pl-1 mt-0.5">
-                        {formData.fromAddress || "—"}
-                      </div>
-                    </td>
-                    {/* RDC NUMBER PARAMETER BLOCK */}
-                    <td className="border-b border-r border-black font-bold p-1.5 w-[22%] bg-slate-50/50 align-middle">RDC No.</td>
-                    <td className="border-b border-r border-black p-1.5 font-mono font-bold text-slate-900 align-middle break-all">
-                      {rdcNumber || "—"}
-                    </td>
-                  </tr>
-                  <tr>
-                    {/* TO RECIPIENT ZONE */}
-                    <td rowSpan="2" className="border-l border-b border-r border-black align-top p-2.5 leading-5">
-                      <span className="font-bold block uppercase text-[10px] text-slate-400 tracking-wider">TO,</span>
-                      <div className="whitespace-pre-line text-slate-900 font-medium pl-1 mt-0.5">
-                        {formData.toAddress || "—"}
-                      </div>
-                    </td>
-                    <td className="border-b border-r border-black font-bold p-1.5 bg-slate-50/50">RDC Date:</td>
-                    <td className="border-b border-r border-black p-1.5 text-slate-800">{formatDate(formData.rdcDate) || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="border-b border-r border-black font-bold p-1.5 bg-slate-50/50">Gate Pass No.</td>
-                    <td className="border-b border-r border-black p-1.5 text-slate-800 font-mono">{formData.gatePassNo || "—"}</td>
-                  </tr>
-                  <tr>
-                    {/* WORK REQUEST INTERNAL INFOTABLE CELL */}
-                    <td className="p-0 border-l border-b border-r border-black align-top">
-                      <table className="w-full border-collapse text-[11px]">
-                        <tbody>
-                          <tr className="border-b border-black">
-                            <td className="p-1.5 font-bold w-[35%] bg-slate-50/40">Request By</td>
-                            <td className="p-1.5 text-slate-900">{formData.requestBy || "—"}</td>
-                          </tr>
-                          <tr className="border-b border-black">
-                            <td className="p-1.5 font-bold bg-slate-50/40">Employee/Pilot</td>
-                            <td className="p-1.5 text-slate-900">{formData.employeePilot || "—"}</td>
-                          </tr>
-                          <tr>
-                            <td className="p-1.5 font-bold bg-slate-50/40">Mail Date</td>
-                            <td className="p-1.5 text-slate-900">{formatDate(formData.mailDate) || "—"}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                    <td className="p-0 border-b border-r border-black align-top col-span-2" colSpan="2">
-                      <table className="w-full border-collapse text-[11px]">
-                        <tbody>
-                          <tr className="border-b border-black">
-                            <td className="p-1.5 font-bold w-[44%] bg-slate-50/40">Mode of Dispatch</td>
-                            <td className="p-1.5 text-slate-900">{formData.modeOfDispatch || "—"}</td>
-                          </tr>
-                          <tr className="border-b border-black">
-                            <td className="p-1.5 font-bold bg-slate-50/40">Vehicle No</td>
-                            <td className="p-1.5 text-slate-900 font-mono">{formData.vehicleNo || "—"}</td>
-                          </tr>
-                          <tr>
-                            <td className="p-1.5 font-bold bg-slate-50/40">Return Date</td>
-                            <td className="p-1.5 text-slate-900">{formatDate(formData.returnDate) || "—"}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+    {/* BRAND NAME TITLE BAR HEADER */}
+    <div className="border-x border-b border-black text-center font-bold text-[14px] uppercase tracking-wide py-1.5 bg-slate-50">
+      Returnable Delivery Challan
+    </div>
 
-              {/* CORE DYNAMIC PRODUCTS MANIFEST TABLE DATA WORKSPACE */}
-              <table className="w-full border-collapse text-[12px] mt-4 table-fixed">
-                <thead>
-                  <tr className="bg-slate-50">
-                    <th className="border border-black p-1.5 text-center font-bold w-[8%]">S.No</th>
-                    <th className="border border-black p-1.5 text-left font-bold w-[62%]">Description of Goods</th>
-                    <th className="border border-black p-1.5 text-center font-bold w-[15%]">Qty</th>
-                    <th className="border border-black p-1.5 text-center font-bold w-[15%]">UoM</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, index) => (
-                    <tr key={index}>
-                      <td className="border border-black p-1.5 text-center h-[28px] text-slate-700">{index + 1}</td>
-                      <td className="border border-black p-1.5 pl-3 text-slate-900 break-words">{item.description || "—"}</td>
-                      <td className="border border-black p-1.5 text-center font-medium text-slate-900">{item.quantity || "—"}</td>
-                      <td className="border border-black p-1.5 text-center text-slate-600">{item.uom}</td>
-                    </tr>
-                  ))}
-                  {/* Padding structure if items count is low to retain consistent visual layout structure height */}
-                  {Array.from({
-                    length: Math.max(0, 14 - items.length),
-                  }).map((_, emptyIdx) => (
-                    <tr key={`empty-${emptyIdx}`}>
-                      <td className="border border-black h-[28px] text-center">&nbsp;</td>
-                      <td className="border border-black">&nbsp;</td>
-                      <td className="border border-black">&nbsp;</td>
-                      <td className="border border-black">&nbsp;</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+    {/* ASSIGNED ADDRESS INFRASTRUCTURE SCHEME ROW GRID */}
+    <table className="w-full border-collapse text-[12px] table-fixed">
+      <tbody>
+        <tr>
+          {/* FROM ZONE */}
+          <td className="border-l border-b border-r border-black align-top p-2.5 w-[50%] leading-5">
+            <span className="font-bold block uppercase text-[10px] text-slate-400 tracking-wider">
+              FROM,
+            </span>
 
-              {/* AUTHORIZATION PERSONNEL COMPARTMENTS SIGN BLOCK */}
-              <table className="w-full border-collapse text-[11px] mt-4 table-fixed">
-                <tbody>
-                  <tr>
-                    <td className="border border-black p-2 w-[25%] h-14 align-top">
-                      <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">Issued by:</span>
-                      <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">{formData.issuedBy}</div>
-                    </td>
-                    <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
-                      <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">Checked by:</span>
-                      <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">{formData.checkedBy}</div>
-                    </td>
-                    <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
-                      <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">Received by:</span>
-                      <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">{formData.receivedBy}</div>
-                    </td>
-                    <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
-                      <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">Quality check by:</span>
-                      <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">{formData.qualityCheckBy}</div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan="2" className="border-l border-b border-r border-black p-2 h-14 align-top">
-                      <span className="italic text-slate-400 text-[10px]">Notes / Special Operations Instructions:</span>
-                    </td>
-                    <td colSpan="2" className="border-b border-r border-black p-2 text-center align-top relative">
-                      <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">For Garuda Aerospace Private .Limited</span>
-                      <div className="text-[11px] text-slate-400 mt-6 font-serif font-bold uppercase tracking-wider">Authorized Signatory</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
+            <div className="whitespace-pre-line text-slate-900 font-medium pl-1 mt-0.5">
+              {formData.fromAddress || "—"}
             </div>
+          </td>
+
+          {/* RDC NUMBER PARAMETER BLOCK */}
+          <td className="border-b border-r border-black font-bold p-1.5 w-[22%] bg-slate-50/50 align-middle">
+            RDC No.
+          </td>
+
+          <td className="border-b border-r border-black p-1.5 font-mono font-bold text-slate-900 align-middle break-all">
+            {rdcNumber || "—"}
+          </td>
+        </tr>
+
+        <tr>
+          {/* TO RECIPIENT ZONE */}
+          <td
+            rowSpan="2"
+            className="border-l border-b border-r border-black align-top p-2.5 leading-5"
+          >
+            <span className="font-bold block uppercase text-[10px] text-slate-400 tracking-wider">
+              TO,
+            </span>
+
+            <div className="whitespace-pre-line text-slate-900 font-medium pl-1 mt-0.5">
+              {formData.toAddress || "—"}
+            </div>
+          </td>
+
+          <td className="border-b border-r border-black font-bold p-1.5 bg-slate-50/50">
+            RDC Date:
+          </td>
+
+          <td className="border-b border-r border-black p-1.5 text-slate-800">
+            {formatDate(formData.rdcDate) || "—"}
+          </td>
+        </tr>
+
+        <tr>
+          <td className="border-b border-r border-black font-bold p-1.5 bg-slate-50/50">
+            Gate Pass No.
+          </td>
+
+          <td className="border-b border-r border-black p-1.5 text-slate-800 font-mono">
+            {formData.gatePassNo || "—"}
+          </td>
+        </tr>
+
+        <tr>
+          {/* WORK REQUEST INTERNAL INFOTABLE CELL */}
+          <td className="p-0 border-l border-b border-r border-black align-top">
+            <table className="w-full border-collapse text-[11px]">
+              <tbody>
+                <tr className="border-b border-black">
+                  <td className="p-1.5 font-bold w-[35%] bg-slate-50/40">
+                    Request By
+                  </td>
+
+                  <td className="p-1.5 text-slate-900">
+                    {formData.requestBy || "—"}
+                  </td>
+                </tr>
+
+                <tr className="border-b border-black">
+                  <td className="p-1.5 font-bold bg-slate-50/40">
+                    Employee/Pilot
+                  </td>
+
+                  <td className="p-1.5 text-slate-900">
+                    {formData.employeePilot || "—"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="p-1.5 font-bold bg-slate-50/40">
+                    Mail Date
+                  </td>
+
+                  <td className="p-1.5 text-slate-900">
+                    {formatDate(formData.mailDate) || "—"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+
+          <td
+            className="p-0 border-b border-r border-black align-top col-span-2"
+            colSpan="2"
+          >
+            <table className="w-full border-collapse text-[11px]">
+              <tbody>
+                <tr className="border-b border-black">
+                  <td className="p-1.5 font-bold w-[44%] bg-slate-50/40">
+                    Mode of Dispatch
+                  </td>
+
+                  <td className="p-1.5 text-slate-900">
+                    {formData.modeOfDispatch || "—"}
+                  </td>
+                </tr>
+
+                <tr className="border-b border-black">
+                  <td className="p-1.5 font-bold bg-slate-50/40">
+                    Vehicle No
+                  </td>
+
+                  <td className="p-1.5 text-slate-900 font-mono">
+                    {formData.vehicleNo || "—"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="p-1.5 font-bold bg-slate-50/40">
+                    Return Date
+                  </td>
+
+                  <td className="p-1.5 text-slate-900">
+                    {formatDate(formData.returnDate) || "—"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    {/* CORE DYNAMIC PRODUCTS MANIFEST TABLE DATA WORKSPACE */}
+    <table className="w-full border-collapse text-[12px] mt-4 table-fixed">
+      <thead>
+        <tr className="bg-slate-50">
+          <th className="border border-black p-1.5 text-center font-bold w-[8%]">
+            S.No
+          </th>
+
+          <th className="border border-black p-1.5 text-left font-bold w-[62%]">
+            Description of Goods
+          </th>
+
+          <th className="border border-black p-1.5 text-center font-bold w-[15%]">
+            Qty
+          </th>
+
+          <th className="border border-black p-1.5 text-center font-bold w-[15%]">
+            UoM
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {items.map((item, index) => (
+          <tr key={index}>
+            <td className="border border-black p-1.5 text-center h-[28px] text-slate-700">
+              {index + 1}
+            </td>
+
+            <td className="border border-black p-1.5 pl-3 text-slate-900 break-words">
+              {item.description || "—"}
+            </td>
+
+            <td className="border border-black p-1.5 text-center font-medium text-slate-900">
+              {item.quantity || "—"}
+            </td>
+
+            <td className="border border-black p-1.5 text-center text-slate-600">
+              {item.uom}
+            </td>
+          </tr>
+        ))}
+
+        {Array.from({
+          length: Math.max(0, 14 - items.length),
+        }).map((_, emptyIdx) => (
+          <tr key={`empty-${emptyIdx}`}>
+            <td className="border border-black h-[28px] text-center">
+              &nbsp;
+            </td>
+
+            <td className="border border-black">&nbsp;</td>
+
+            <td className="border border-black">&nbsp;</td>
+
+            <td className="border border-black">&nbsp;</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* AUTHORIZATION PERSONNEL COMPARTMENTS SIGN BLOCK */}
+    <table className="w-full border-collapse text-[11px] mt-4 table-fixed">
+      <tbody>
+        <tr>
+          <td className="border border-black p-2 w-[25%] h-14 align-top">
+            <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">
+              Issued by:
+            </span>
+
+            <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">
+              {formData.issuedBy}
+            </div>
+          </td>
+
+          <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
+            <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">
+              Checked by:
+            </span>
+
+            <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">
+              {formData.checkedBy}
+            </div>
+          </td>
+
+          <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
+            <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">
+              Received by:
+            </span>
+
+            <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">
+              {formData.receivedBy}
+            </div>
+          </td>
+
+          <td className="border-t border-b border-r border-black p-2 w-[25%] align-top">
+            <span className="font-bold text-slate-400 block text-[9px] uppercase tracking-wider">
+              Quality check by:
+            </span>
+
+            <div className="font-bold text-slate-800 text-center mt-3 truncate px-1">
+              {formData.qualityCheckBy}
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td
+            colSpan="2"
+            className="border-l border-b border-r border-black p-2 h-14 align-top"
+          >
+            <span className="italic text-slate-400 text-[10px]">
+              Notes / Special Operations Instructions:
+            </span>
+          </td>
+
+          <td
+            colSpan="2"
+            className="border-b border-r border-black p-2 text-center align-top relative"
+          >
+            <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">
+              For Garuda Aerospace Private .Limited
+            </span>
+
+            <div className="text-[11px] text-slate-400 mt-6 font-serif font-bold uppercase tracking-wider">
+              Authorized Signatory
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
           </div>
         </div>
 

@@ -124,9 +124,9 @@ const CreatePO = () => {
         ? `${currentYear % 100}-${(currentYear + 1) % 100}` 
         : `${(currentYear - 1) % 100}-${currentYear % 100}`;
       
-      setPoNumber(`${prefix}/DC/${fiscalYear}/${String(count).padStart(3, "0")}`);
+      setPoNumber(`${prefix}/PO/${fiscalYear}/${String(count).padStart(3, "0")}`);
     } catch (error) {
-      console.error("Vector identification generator issue:", error);
+      console.error("PO number generation error:", error);
     }
   };
 
@@ -434,12 +434,12 @@ const CreatePO = () => {
           >
             <div>
               {/* BRANDING MANIFEST LOGO & REGISTRY HEADING LAYER */}
-              <div className="flex justify-between items-start border-b-2 border-slate-200 pb-8">
+              <div className="flex justify-between items-start border-b-2 border-slate-200 pb-2">
                 <div>
-                  <img src={template?.logo || logo} alt="Brand Token Reference" className="h-28 w-auto object-contain max-w-[200px]" />
+                  <img src={template?.logo || logo} alt="Brand Token Reference" className="h-25 w-auto object-contain max-w-[200px]" />
                 </div>
                 <div className="text-right">
-                  <h2 className="text-2xl font-black text-slate-700 tracking-tight uppercase m-0">
+                  <h2 className="text-[18px] font-black text-slate-700 tracking-tight uppercase m-0">
                     {template?.documentTitle || "DELIVERY CHALLAN"}
                   </h2>
                   <div className="mt-2 text-sm leading-relaxed text-slate-600 font-semibold">
@@ -451,10 +451,10 @@ const CreatePO = () => {
               </div>
 
               {/* ROUTING ALLOCATION CRADLES */}
-              <div className="grid grid-cols-2 gap-12 mt-8 text-sm">
+              <div className="grid grid-cols-2 gap-12 mt-4 text-sm">
                 <div className="space-y-2">
                   <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100">
-                    {template?.soldToTitle || "SOLD TO"}
+                    {template?.shipTitle || "SOLD TO"}
                   </h4>
                   <div className="leading-relaxed font-medium text-slate-600 space-y-1">
                     <p className="font-black text-slate-900 text-lg mb-1">{vendorData.vendorCompany || "—"}</p>
@@ -466,17 +466,43 @@ const CreatePO = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100">
-                    {template?.shipTitle || "SHIP TO"}
-                  </h4>
-                  <div className="leading-relaxed font-medium text-slate-600 space-y-1 text-slate-800">
-                    {shipTo.map((line, index) => (
-                      <p key={index}>{line}</p>
-                    ))}
+                
+                <div className="gap-12 text-sm">
+                  
+                  {/* BILLING TO */}
+                  <div >
+                    <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100">
+                      BILLING TO
+                    </h4>
+
+                    <div className="leading-relaxed font-medium text-slate-700 ">
+                      <p>24,46, KB Dasan Rd, Seetammal Colony,</p>
+                      <p>Lubdhi Colony, Alwarpet,</p>
+                      <p>Chennai, Tamil Nadu - 600018</p>
+                    </div>
+                  
+                  </div>
+
+                  {/* SHIP TO */}
+                  <div >
+                    <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100 mt-4">
+                      SHIP TO
+                    </h4>
+
+                    <div className="leading-relaxed font-medium text-slate-700">
+                      <p>Garuda Aerospace Private</p>
+                      <p>Agni College Of Technology</p>
+                      <p>Old Mahabalipuram Road</p>
+                      <p>Thazhambur, Chennai - 600130</p>
+                      <p>Tamil Nadu, India</p>
+
+                      <p className="font-bold text-slate-500 pt-1">
+                        GSTIN : 33AAGCG1621A1ZG
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+            </div>
 
               {/* FIXED OVERFLOW TABLE CONTAINER */}
               <table className="w-full table-fixed border-collapse text-[10px] mt-10">
@@ -515,7 +541,7 @@ const CreatePO = () => {
 
             <div>
               {/* BALANCE SUMMARY COMPILATION TRACKS */}
-              <div className="flex justify-end mt-2 border-t-2 border-slate-100 pt-6">
+              <div className="flex justify-end mt-2 border-t-2 border-slate-100 pt-3">
                 <div className="w-80 text-xs space-y-3 font-semibold text-slate-600">
                   <div className="flex justify-between">
                     <span>Operational Subtotal</span>
@@ -537,7 +563,7 @@ const CreatePO = () => {
               </div>
 
               {/* COMPLIANCE CLAUSES & LEGAL ATTESTATION LAYER */}
-              <div className="flex justify-between items-end mt-12 pt-6 border-t border-slate-200 min-h-[120px]">
+              <div className="flex justify-between items-end mt-5 pt-2 border-t border-slate-200 min-h-[120px]">
                 <div className="max-w-[60%]">
                   <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wide mb-2">
                     {template?.termsTitle || "Terms & Conditions"}

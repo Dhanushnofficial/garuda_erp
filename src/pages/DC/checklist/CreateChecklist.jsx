@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase/firebase";
-import logo from "../../../assets/Dc_logo.png";
+import logo from "../../../assets/logo_1.png";
+import logo_watermark from "../../../assets/logo_watermark.png";
 import {
   FaPlus,
   FaTrashAlt,
@@ -361,8 +362,8 @@ const CreateLOI = () => {
             }}
           >
             {/* INLINE WATERMARK LAYER CONTAINER */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none print:opacity-[0.02]">
-              <img src={logo} alt="Watermark Base Reference" className="w-[480px] object-contain" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.7] pointer-events-none select-none print:opacity-[0.02]">
+              <img src={logo_watermark} alt="Watermark Base Reference" className="w-[480px] object-contain" />
             </div>
 
             {/* DYNAMIC FLOW CONTAINER */}
@@ -370,7 +371,7 @@ const CreateLOI = () => {
               
               <div>
                 {/* TOP HEADER COMPONENT BLOCK */}
-                <div className="flex justify-between items-start relative z-10 border-b border-slate-100 pb-4">
+                <div className="flex relative z-10 border-b border-slate-100 pb-2" style={{justifyContent:'center'}}>
                   <div />
                   <img src={logo} alt="Garuda Logo Token" className="h-16 w-auto object-contain max-w-[220px]" />
                 </div>

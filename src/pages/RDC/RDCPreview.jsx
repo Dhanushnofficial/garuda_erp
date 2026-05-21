@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { FaArrowLeft, FaPrint } from "react-icons/fa";
 import { db } from "../../firebase/firebase";
-import logo from "../../assets/Dc_logo.png";
+import logo from "../../assets/logo_1.png";
+import logo_watermark from '../../assets/logo_watermark.png'
 
 const RDCPreview = () => {
   const { id } = useParams();
@@ -59,85 +60,233 @@ const RDCPreview = () => {
           </button>
         </div>
 
+        
         {/* PRINT CANVAS */}
-        <div id="print-area" className="bg-white mx-auto shadow-xl flex flex-col justify-between" 
-             style={{ width: "210mm", minHeight: "297mm", padding: "10mm", fontFamily: "Times New Roman" }}>
-          
-          <div className="flex-grow">
-            <div className="flex justify-center mb-4"><img src={logo} alt="Logo" className="w-56" /></div>
-            <h2 className="text-center text-2xl font-bold underline uppercase">Returnable Delivery Challan</h2>
+        <div
+          id="print-area"
+          className="bg-white mx-auto shadow-xl relative overflow-hidden"
+          style={{
+            width: "210mm",
+            minHeight: "297mm",
+            padding: "10mm",
+            fontFamily: "Times New Roman",
+          }}
+        >
 
-            {/* RDC Details Table */}
-            <table className="mt-8 w-full border border-black border-collapse text-[13px]">
-              <tbody>
-                <tr>
-                  <td className="border border-black p-3 w-1/2 align-top">
-                    <p className="font-bold underline">FROM,</p>
-                    <p className="whitespace-pre-line mt-2 font-medium">{data.fromAddress}</p>
-                    <p className="font-bold underline mt-4">TO,</p>
-                    <p className="whitespace-pre-line mt-2 font-medium">{data.toAddress}</p>
-                  </td>
-                  <td className="border border-black p-0 w-1/2">
-                    <table className="w-full border-collapse">
-                      <tbody>
-                        <tr><td className="border border-black p-2 font-bold">RDC No.</td><td className="border border-black p-2">{data.rdcNumber}</td></tr>
-                        <tr><td className="border border-black p-2 font-bold">RDC Date</td><td className="border border-black p-2">{data.rdcDate}</td></tr>
-                        <tr><td className="border border-black p-2 font-bold">Gate Pass No</td><td className="border border-black p-2">{data.gatePassNo}</td></tr>
-                        <tr><td className="border border-black p-2 font-bold">Vehicle No</td><td className="border border-black p-2">{data.vehicleNo}</td></tr>
-                      </tbody>
-                    </table>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Products */}
-            <table className="mt-6 w-full border border-black border-collapse text-[13px]">
-              <thead>
-                <tr className="bg-gray-100 font-bold">
-                  <th className="border border-black p-2 w-[10%]">S.No</th>
-                  <th className="border border-black p-2 text-left">Description of Goods</th>
-                  <th className="border border-black p-2 w-[15%]">Qty</th>
-                  <th className="border border-black p-2 w-[15%]">UoM</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items?.map((item, index) => (
-                  <tr key={index}>
-                    <td className="border border-black p-2 text-center">{index + 1}</td>
-                    <td className="border border-black p-2">{item.description}</td>
-                    <td className="border border-black p-2 text-center">{item.quantity}</td>
-                    <td className="border border-black p-2 text-center">{item.uom}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* WATERMARK */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          >
+            <img
+              src={logo_watermark}
+              alt="Watermark"
+              style={{
+                width: "480px",
+                opacity: 0.7,
+                objectFit: "contain",
+              }}
+            />
           </div>
 
-          {/* SIGNATURES & FOOTER */}
-          <div className="mt-auto pt-8">
-            <div className="grid grid-cols-2 gap-4 text-[12px] font-bold mb-10">
-              <div className="border border-black p-2">Issued by: {data.issuedBy}</div>
-              <div className="border border-black p-2">Checked by: {data.checkedBy}</div>
-              <div className="border border-black p-2">Received by:</div>
-              <div className="border border-black p-2 text-center">
-                 <p className="mt-8 italic">Authorized Signatory</p>
+          {/* CONTENT */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 1,
+              minHeight: "277mm",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+
+            {/* TOP CONTENT */}
+            <div>
+
+              {/* LOGO */}
+              <div className="flex justify-center mb-2">
+                <img
+                  src={logo}
+                  alt="Logo"
+                  style={{ height: "70px", width: "150px" }}
+                />
               </div>
+
+              {/* TITLE */}
+              <h2 className="text-center text-2xl font-bold underline uppercase">
+                Returnable Delivery Challan
+              </h2>
+
+              {/* RDC DETAILS */}
+              <table className="mt-8 w-full border border-black border-collapse text-[13px]">
+                <tbody>
+                  <tr>
+                    <td className="border border-black p-3 w-1/2 align-top">
+                      <p className="font-bold underline">FROM,</p>
+
+                      <p className="whitespace-pre-line mt-2 font-medium">
+                        {data.fromAddress}
+                      </p>
+
+                      <p className="font-bold underline mt-4">TO,</p>
+
+                      <p className="whitespace-pre-line mt-2 font-medium">
+                        {data.toAddress}
+                      </p>
+                    </td>
+
+                    <td className="border border-black p-0 w-1/2">
+                      <table className="w-full border-collapse">
+                        <tbody>
+                          <tr>
+                            <td className="border border-black p-2 font-bold">
+                              RDC No.
+                            </td>
+
+                            <td className="border border-black p-2">
+                              {data.rdcNumber}
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td className="border border-black p-2 font-bold">
+                              RDC Date
+                            </td>
+
+                            <td className="border border-black p-2">
+                              {data.rdcDate}
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td className="border border-black p-2 font-bold">
+                              Gate Pass No
+                            </td>
+
+                            <td className="border border-black p-2">
+                              {data.gatePassNo}
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td className="border border-black p-2 font-bold">
+                              Vehicle No
+                            </td>
+
+                            <td className="border border-black p-2">
+                              {data.vehicleNo}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* PRODUCTS */}
+              <table className="mt-6 w-full border border-black border-collapse text-[13px]">
+                <thead>
+                  <tr className="bg-gray-100 font-bold">
+                    <th className="border border-black p-2 w-[10%]">S.No</th>
+
+                    <th className="border border-black p-2 text-left">
+                      Description of Goods
+                    </th>
+
+                    <th className="border border-black p-2 w-[15%]">Qty</th>
+
+                    <th className="border border-black p-2 w-[15%]">UoM</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {data.items?.map((item, index) => (
+                    <tr key={index}>
+                      <td className="border border-black p-2 text-center">
+                        {index + 1}
+                      </td>
+
+                      <td className="border border-black p-2">
+                        {item.description}
+                      </td>
+
+                      <td className="border border-black p-2 text-center">
+                        {item.quantity}
+                      </td>
+
+                      <td className="border border-black p-2 text-center">
+                        {item.uom}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <div className="border-t border-slate-300 pt-4 flex justify-between text-[10px] text-slate-500">
-              <div>
-                <p className="font-bold text-slate-800">Registered Office:</p>
-                <p>Garuda Aerospace Private . | Alwarpet, Chennai, Tamil Nadu 600018.</p>
+            {/* FOOTER */}
+            <div className="pt-8">
+
+              {/* SIGNATURES */}
+              <div className="grid grid-cols-2 gap-4 text-[12px] font-bold mb-10">
+                <div className="border border-black p-2">
+                  Issued by: {data.issuedBy}
+                </div>
+
+                <div className="border border-black p-2">
+                  Checked by: {data.checkedBy}
+                </div>
+
+                <div className="border border-black p-2">
+                  Received by:
+                </div>
+
+                <div className="border border-black p-2 text-center">
+                  <p className="mt-8 italic">Authorized Signatory</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-slate-800">Operations Center:</p>
-                <p>Agni College of Technology, OMR, Thazhambur, Chennai 600130.</p>
+
+              {/* COMPANY FOOTER */}
+              <div className="border-t border-slate-300 pt-4 flex justify-between text-[10px] text-slate-500">
+                <div>
+                  <p className="font-bold text-slate-800">
+                    Registered Office:
+                  </p>
+
+                  <p>
+                    Garuda Aerospace Private . | Alwarpet, Chennai, Tamil Nadu 600018.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-bold text-slate-800">
+                    Operations Center:
+                  </p>
+
+                  <p>
+                    Agni College of Technology, OMR, Thazhambur, Chennai 600130.
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="font-bold text-slate-800">
+                    +91 9707600600 | +91 7788868884
+                  </p>
+
+                  <p>
+                    business@garudaaerospace.com | www.garudaaerospace.com
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-slate-800">+91 9707600600 | +91 7788868884</p>
-                <p>business@garudaaerospace.com | www.garudaaerospace.com</p>
-              </div>
+
             </div>
           </div>
         </div>

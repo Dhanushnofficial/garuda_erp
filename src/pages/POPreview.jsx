@@ -14,30 +14,31 @@ const POPreview = () => {
   const [loading, setLoading] = useState(true);
 
   // =========================================
-  // FETCH MANIFEST RECONNAISSANCE
+  // FETCH PO DATA
   // =========================================
   useEffect(() => {
     const fetchPO = async () => {
       try {
         setLoading(true);
-        // 🎯 FIXED: Corrected target collection routing to purchaseOrders
+
         const docRef = doc(db, "purchaseOrders", id);
         const snapshot = await getDoc(docRef);
 
         if (snapshot.exists()) {
           const data = snapshot.data();
+
           setPoData({
             ...data,
             vendorCompany: data.vendorData?.vendorCompany || "—",
-            vendorName: data.vendorData?.vendorName || data.vendorName || "",
-            vendorPhone: data.vendorData?.vendorPhone || data.vendorPhone || "",
-            vendorMail: data.vendorData?.venderMail || data.vendorData?.vendorEmail || data.vendorEmail || "",
-            vendorGST: data.vendorData?.vendorGST || data.vendorGST || "",
-            vendorAddress: data.vendorData?.vendorAddress || data.vendorAddress || "",
+            vendorName: data.vendorData?.vendorName || "",
+            vendorPhone: data.vendorData?.vendorPhone || "",
+            vendorMail: data.vendorData?.venderMail || "",
+            vendorGST: data.vendorData?.vendorGST || "",
+            vendorAddress: data.vendorData?.vendorAddress || "",
           });
         }
       } catch (error) {
-        console.error("Document fetching failure:", error);
+        console.error("PO Fetch Error:", error);
       } finally {
         setLoading(false);
       }
@@ -48,272 +49,522 @@ const POPreview = () => {
     }
   }, [id]);
 
+  // =========================================
+  // FORMAT DATE
+  // =========================================
   const formatDate = (value) => {
     if (!value) return "";
+
     const date = new Date(value);
+
     if (Number.isNaN(date.getTime())) return value;
+
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
+
     return `${day}-${month}-${date.getFullYear()}`;
   };
 
   // =========================================
-  // PRINT PLATFORM ENGINE
+  // PRINT
   // =========================================
   const handlePrint = () => {
     window.print();
   };
 
   // =========================================
-  // LOADING UTILITY STATES
+  // LOADING
   // =========================================
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 justify-center items-center min-h-screen bg-slate-950 text-white ml-[250px]">
-        <div className="w-14 h-14 border-4 border-t-blue-500 border-slate-800 rounded-full animate-spin"></div>
-        <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase animate-pulse">
-          Retrieving Airframe Archive...
-        </p>
+      <div className="flex justify-center items-center min-h-screen bg-slate-950 ml-[250px]">
+        <div className="text-center">
+          <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+
+          <p className="text-slate-300 mt-4 font-semibold tracking-widest text-sm uppercase">
+            Loading Purchase Order...
+          </p>
+        </div>
       </div>
     );
   }
 
+  // =========================================
+  // NO DATA
+  // =========================================
   if (!poData) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 ml-[250px] text-slate-500">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">Manifest File Missing</h2>
-        <p className="text-sm text-slate-400 mb-6">The requested Purchase Order database mapping index could not be resolved.</p>
-        <button onClick={() => navigate("/history")} className="bg-slate-900 text-white px-5 py-2 rounded-xl text-sm font-semibold">
-          Return to History
+      <div className="flex flex-col justify-center items-center min-h-screen bg-slate-100 ml-[250px]">
+        <h2 className="text-2xl font-bold text-slate-800">
+          Purchase Order Not Found
+        </h2>
+
+        <button
+          onClick={() => navigate("/history")}
+          className="mt-6 bg-slate-900 text-white px-6 py-3 rounded-xl"
+        >
+          Back
         </button>
       </div>
     );
   }
 
-  const templateConfig = poData.template || {};
-  const shipToLines = Array.isArray(templateConfig.shipTo) ? templateConfig.shipTo : [];
-
   return (
-    <div className="min-h-screen bg-slate-50 p-6 xl:p-8 ml-[250px] font-sans antialiased selection:bg-blue-500 selection:text-white print:m-0 print:p-0 print:bg-white">
-      
-      {/* INJECT MEDIA PRINTER INSTRUCTION COMPILER TARGET */}
+    <div className="min-h-screen bg-slate-50 p-6 xl:p-8 ml-[250px] font-sans antialiased print:bg-white print:p-0">
+
+      {/* PRINT CSS */}
       <style>{`
         @media print {
           body * {
             visibility: hidden;
           }
-          #print-area-target, #print-area-target * {
+
+          #print-area,
+          #print-area * {
             visibility: visible;
           }
-          #print-area-target {
+
+          #print-area {
             position: absolute;
             left: 0;
             top: 0;
             width: 210mm;
             min-height: 297mm;
             padding: 12mm !important;
-            box-shadow: none !important;
             margin: 0 !important;
+            box-shadow: none !important;
           }
-          .no-print-terminal {
+
+          .no-print {
             display: none !important;
           }
         }
       `}</style>
 
-      {/* TOP CONTROL TERMINAL INTERACTION BAR */}
-      <div className="no-print-terminal flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-blue-600/10 blur-[80px] pointer-events-none"></div>
+      {/* TOP BAR */}
+      <div className="no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
+
+        <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-blue-600/10 blur-[80px]"></div>
+
         <div>
-          <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-blue-400 uppercase bg-blue-500/10 rounded border border-blue-500/20 inline-block mb-1">
-            Verification Output
-          </span>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Order Verification View</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Auditing internal purchasing ledger values before printing execution.</p>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-1 text-[10px] font-bold tracking-widest text-blue-400 uppercase bg-blue-500/10 rounded border border-blue-500/20">
+              Verification Output
+            </span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            Order Verification View
+          </h1>
+
+          <p className="text-slate-400 text-sm mt-1">
+            Auditing internal purchasing ledger values before printing execution.
+          </p>
         </div>
-        
-        <div className="flex gap-3 w-full sm:w-auto shrink-0">
+
+        <div className="flex gap-3">
+
           <button
             onClick={() => navigate("/history")}
-            className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-sm font-semibold px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl font-semibold flex items-center gap-2"
           >
-            <FaArrowLeft className="text-xs" /> Back
+            <FaArrowLeft />
+            Back
           </button>
+
           <button
             onClick={handlePrint}
-            className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-lg shadow-blue-950/20 border border-blue-500/30 transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2"
           >
-            <FaPrint /> Print Document Manifest
+            <FaPrint />
+            Print Document Manifest
           </button>
+
         </div>
       </div>
 
-      {/* CANVAS SECTION CRADLE LAYER */}
+      {/* PREVIEW */}
       <div className="space-y-4">
-        <div className="no-print-terminal flex items-center gap-2 pl-2 text-slate-400">
+
+        <div className="no-print flex items-center gap-2 pl-2 text-slate-400">
           <FaEye className="text-sm" />
-          <span className="font-bold text-xs uppercase tracking-widest">Live Dynamic Sheet Engine (A4 Emulation)</span>
+
+          <span className="font-bold text-xs uppercase tracking-widest">
+            Live Dynamic Sheet Engine (A4 Emulation)
+          </span>
         </div>
 
-        <div className="bg-slate-800 rounded-3xl p-8 border border-slate-700/50 shadow-inner overflow-x-auto flex justify-center print:p-0 print:bg-white print:border-none">
-          
-          {/* THE ENGINE VECTOR PRINT CANVAS TARGET */}
+        <div className="bg-slate-800 rounded-3xl p-8 border border-slate-700/50 shadow-inner overflow-x-auto flex justify-center print:p-0 print:bg-white">
+
+          {/* PDF AREA */}
           <div
-            id="print-area-target"
+            id="print-area"
             ref={printRef}
-            className="bg-white shadow-2xl shrink-0 p-12 flex flex-col justify-between rounded-sm print:shadow-none"
+            className="bg-white shadow-2xl shrink-0 p-12 rounded-sm flex flex-col justify-between print:shadow-none"
             style={{
               width: "210mm",
               minHeight: "297mm",
               boxSizing: "border-box",
-              fontFamily: "Inter, system-ui, sans-serif"
+              fontFamily: "Inter, sans-serif",
             }}
           >
+
+            {/* TOP SECTION */}
             <div>
-              {/* BRANDING MANIFEST LOGO & REGISTRY HEADING LAYER */}
-              <div className="flex justify-between items-start border-b-2 border-slate-200 pb-4">
+
+              {/* HEADER */}
+              <div className="flex justify-between items-start border-b border-slate-200 pb-3">
+
                 <div>
-                  <img src={templateConfig.logo || logo} alt="Brand Token Reference" className="h-28 w-auto object-contain max-w-[200px]" />
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="h-24 object-contain"
+                  />
                 </div>
+
                 <div className="text-right">
-                  <h2 className="text-2xl font-black text-slate-700 tracking-tight uppercase m-0">
-                    {templateConfig.documentTitle || "PURCHASE ORDER"}
+
+                  <h2 className="text-[18px] leading-none font-black text-slate-700 uppercase">
+                    PURCHASE ORDER
                   </h2>
-                  <div className="mt-2 text-sm leading-relaxed text-slate-600 font-semibold">
-                    <p><b className="text-slate-400 font-bold">{templateConfig.poLabel || "PO Number"}</b> <span className="font-mono text-xs">{poData.poNumber}</span></p>
-                    <p><b className="text-slate-400 font-bold">{templateConfig.dateLabel || "Date"}</b> <span className="font-mono text-xs">{poData.templateDate || (poData.createdAt?.seconds ? formatDate(new Date(poData.createdAt.seconds * 1000).toISOString()) : "—")}</span></p>
-                    <p><b className="text-slate-400 font-bold">Reference:</b> <span className="font-mono text-xs">{poData.referenceNo || "—"}</span></p>
+
+                  <div className="mt-4 space-y-1 text-[13px] font-semibold text-slate-600">
+
+                    <p>
+                      <span className="text-slate-400">
+                        PO Number:
+                      </span>{" "}
+                      <span className="font-mono">
+                        {poData.poNumber}
+                      </span>
+                    </p>
+
+                    <p>
+                      <span className="text-slate-400">
+                        Date:
+                      </span>{" "}
+                      <span className="font-mono">
+                        {poData.createdAt?.seconds
+                          ? formatDate(
+                              new Date(
+                                poData.createdAt.seconds * 1000
+                              ).toISOString()
+                            )
+                          : "—"}
+                      </span>
+                    </p>
+
+                    <p>
+                      <span className="text-slate-400">
+                        Reference:
+                      </span>{" "}
+                      <span className="font-mono">
+                        {poData.referenceNo || "—"}
+                      </span>
+                    </p>
+
                   </div>
+
                 </div>
+
               </div>
 
-              {/* ROUTING ALLOCATION CRADLES */}
-              <div className="grid grid-cols-2 gap-12 mt-8 text-sm">
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100">
-                    {templateConfig.soldToTitle || "SOLD TO"}
+              {/* ADDRESS SECTION */}
+              <div className="grid grid-cols-2 gap-16 mt-6 text-[14px]">
+
+                {/* VENDOR */}
+                <div>
+
+                  <h4 className="font-bold text-slate-500 uppercase tracking-[3px] text-[13px] border-b border-slate-200 pb-2">
+                    VENDOR DETAILS
                   </h4>
-                  <div className="leading-relaxed font-medium text-slate-600 space-y-1">
-                    <p className="font-black text-slate-900 text-lg mb-1">{poData.vendorCompany || "—"}</p>
-                    <p className="text-slate-800">{poData.vendorName}</p>
-                    <p className="font-mono">{poData.vendorPhone}</p>
+
+                  <div className="leading-6 text-slate-700">
+
+                    <p className="text-[16px] font-black text-slate-900 leading-8 mb-3">
+                      {poData.vendorCompany || "—"}
+                    </p>
+
+                    <p>{poData.vendorName}</p>
+
+                    <p>{poData.vendorPhone}</p>
+
                     <p>{poData.vendorMail}</p>
-                    <p className="font-mono font-bold text-slate-900 text-xs mt-1">{poData.vendorGST && `GSTIN: ${poData.vendorGST}`}</p>
-                    <p className="mt-1.5 text-slate-500 italic leading-normal">{poData.vendorAddress}</p>
+
+                    <p className="font-bold">
+                      GSTIN: {poData.vendorGST}
+                    </p>
+
+                    <p className="italic text-slate-500 leading-6 mt-1">
+                      {poData.vendorAddress}
+                    </p>
+
                   </div>
+
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-500 uppercase tracking-widest text-xs border-b-2 pb-1.5 border-slate-100">
-                    {templateConfig.shipTitle || "SHIP TO"}
-                  </h4>
-                  <div className="leading-relaxed font-medium text-slate-800 space-y-1">
-                    {shipToLines.map((line, index) => (
-                      <p key={index}>{line}</p>
-                    ))}
+                {/* RIGHT SIDE */}
+                <div >
+
+                  {/* BILLING */}
+                  <div>
+
+                    <h4 className="font-bold text-slate-500 uppercase tracking-[3px] text-[13px] border-b border-slate-200 pb-2 ">
+                      BILLING TO
+                    </h4>
+
+                    <div className="leading-7 text-slate-700">
+
+                      <p>
+                        24,46, KB Dasan Rd, Seetammal Colony,
+                      </p>
+
+                      <p>
+                        Lubdhi Colony, Alwarpet,
+                      </p>
+
+                      <p>
+                        Chennai, Tamil Nadu - 600018
+                      </p>
+
+                    </div>
+
                   </div>
+
+                  {/* SHIP */}
+                  <div>
+
+                    <h4 className="font-bold text-slate-500 uppercase tracking-[3px] text-[12px] border-b border-slate-200 pb-2 mt-4">
+                      SHIP TO
+                    </h4>
+
+                    <div className="leading-7 text-slate-700">
+
+                      <p>Garuda Aerospace Private</p>
+
+                      <p>Agni College Of Technology</p>
+
+                      <p>Old Mahabalipuram Road</p>
+
+                      <p>Thazhambur, Chennai - 600130</p>
+
+                      <p>Tamil Nadu, India</p>
+
+                      <p className="font-bold">
+                        GSTIN : 33AAGCG1621A1ZG
+                      </p>
+
+                    </div>
+
+                  </div>
+
                 </div>
+
               </div>
 
-              {/* FIXED BOUNDED GRID ARCHITECTURE TABLE */}
-              <table className="w-full table-fixed border-collapse text-[10px] mt-10">
+              {/* TABLE */}
+              <table className="w-full mt-10 border-collapse table-fixed">
+
                 <thead>
-                  <tr className="bg-slate-900 text-white font-bold text-left uppercase tracking-wider text-[9px]">
-                    <th className="p-2 rounded-l pl-3 w-[20%]">Product</th>
-                    <th className="p-2 w-[16%]">Model</th>
-                    <th className="p-2 text-center w-[11%]">HSN</th>
-                    <th className="p-2 text-center w-[6%]">Qty</th>
-                    <th className="p-2 text-right w-[11%]">Price</th>
-                    <th className="p-2 text-right w-[12%]">Taxable</th>
-                    <th className="p-2 text-center w-[6%]">CGST</th>
-                    <th className="p-2 text-right w-[9%]">Amt</th>
-                    <th className="p-2 text-center w-[6%]">IGST</th>
-                    <th className="p-2 text-right rounded-r pr-3 w-[9%]">Amt</th>
+                  <tr className="bg-slate-900 text-white uppercase text-[10px] tracking-wider">
+
+                    <th className="p-3 text-left w-[22%]">
+                      Product
+                    </th>
+
+                    <th className="p-3 text-left w-[17%]">
+                      Model
+                    </th>
+
+                    <th className="p-3 text-center w-[10%]">
+                      HSN
+                    </th>
+
+                    <th className="p-3 text-center w-[7%]">
+                      Qty
+                    </th>
+
+                    <th className="p-3 text-right w-[11%]">
+                      Price
+                    </th>
+
+                    <th className="p-3 text-right w-[12%]">
+                      Taxable
+                    </th>
+
+                    <th className="p-3 text-center w-[7%]">
+                      CGST
+                    </th>
+
+                    <th className="p-3 text-right w-[10%]">
+                      Amt
+                    </th>
+
+                    <th className="p-3 text-center w-[7%]">
+                      IGST
+                    </th>
+
+                    <th className="p-3 text-right w-[10%]">
+                      Amt
+                    </th>
+
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 text-slate-800 font-medium">
+
+                <tbody className="divide-y divide-slate-200 text-[13px] text-slate-700">
+
                   {poData.products?.map((item, index) => (
-                    <tr key={index} className="hover:bg-slate-50/50">
-                      <td className="p-2 pl-3 font-bold text-slate-900 break-words line-clamp-2">{item.product || "—"}</td>
-                      <td className="p-2 break-words">{item.model || "—"}</td>
-                      <td className="p-2 text-center font-mono text-slate-500">{item.hsn || "—"}</td>
-                      <td className="p-2 text-center font-mono text-xs">{item.qty}</td>
-                      <td className="p-2 text-right font-mono">₹{Number(item.unitPrice || 0).toFixed(2)}</td>
-                      <td className="p-2 text-right font-mono font-bold text-slate-900">₹{Number(item.taxableAmount || 0).toFixed(2)}</td>
-                      <td className="p-2 text-center font-mono text-slate-500">{Number(item.cgstRate || 0).toFixed(0)}%</td>
-                      <td className="p-2 text-right font-mono text-slate-600">₹{Number(item.cgstAmount || 0).toFixed(2)}</td>
-                      <td className="p-2 text-center font-mono text-slate-500">{Number(item.igstRate || 0).toFixed(0)}%</td>
-                      <td className="p-2 text-right font-mono text-slate-600 pr-3">₹{Number(item.igstAmount || 0).toFixed(2)}</td>
+                    <tr key={index}>
+
+                      <td className="p-3 font-bold text-slate-900 leading-6">
+                        {item.product || "—"}
+                      </td>
+
+                      <td className="p-3 leading-6">
+                        {item.model || "—"}
+                      </td>
+
+                      <td className="p-3 text-center">
+                        {item.hsn || "—"}
+                      </td>
+
+                      <td className="p-3 text-center">
+                        {item.qty}
+                      </td>
+
+                      <td className="p-3 text-right">
+                        ₹{Number(item.unitPrice || 0).toFixed(2)}
+                      </td>
+
+                      <td className="p-3 text-right font-bold">
+                        ₹{Number(item.taxableAmount || 0).toFixed(2)}
+                      </td>
+
+                      <td className="p-3 text-center">
+                        {item.cgstRate || 0}%
+                      </td>
+
+                      <td className="p-3 text-right">
+                        ₹{Number(item.cgstAmount || 0).toFixed(2)}
+                      </td>
+
+                      <td className="p-3 text-center">
+                        {item.igstRate || 0}%
+                      </td>
+
+                      <td className="p-3 text-right">
+                        ₹{Number(item.igstAmount || 0).toFixed(2)}
+                      </td>
+
                     </tr>
                   ))}
+
                 </tbody>
+
               </table>
+
             </div>
 
+            {/* FOOTER */}
             <div>
-              {/* BALANCE SUMMARY COMPILATION TRACKS */}
-              <div className="flex justify-end mt-2 border-t-2 border-slate-100 pt-6">
-                <div className="w-80 text-xs space-y-3 font-semibold text-slate-600">
+
+              {/* TOTALS */}
+              <div className="flex justify-end mt-3 border-t border-slate-200 pt-6">
+
+                <div className="w-[340px] space-y-2 text-[15px] font-semibold text-slate-700">
+
                   <div className="flex justify-between">
                     <span>Operational Subtotal</span>
-                    <span className="font-mono text-slate-900 text-sm">₹{Number(poData.subtotal || 0).toFixed(2)}</span>
+
+                    <span className="font-mono">
+                      ₹{Number(poData.subtotal || 0).toFixed(2)}
+                    </span>
                   </div>
+
                   <div className="flex justify-between">
                     <span>Total System CGST</span>
-                    <span className="font-mono text-slate-700 text-sm">₹{Number(poData.totalCGST || 0).toFixed(2)}</span>
+
+                    <span className="font-mono">
+                      ₹{Number(poData.totalCGST || 0).toFixed(2)}
+                    </span>
                   </div>
+
                   <div className="flex justify-between">
                     <span>Total System IGST</span>
-                    <span className="font-mono text-slate-700 text-sm">₹{Number(poData.totalIGST || 0).toFixed(2)}</span>
+
+                    <span className="font-mono">
+                      ₹{Number(poData.totalIGST || 0).toFixed(2)}
+                    </span>
                   </div>
-                  <div className="flex justify-between border-t-2 border-slate-300 pt-4 text-lg font-black text-slate-900">
-                    <span>Grand Total</span>
-                    <span className="font-mono text-emerald-600 text-xl">₹{Number(poData.grandTotal || 0).toFixed(2)}</span>
+
+                  <div className="flex justify-between border-t border-slate-300 pt-3 text-[22px] font-black">
+
+                    <span className="text-slate-900">
+                      Grand Total
+                    </span>
+
+                    <span className="text-emerald-600 font-mono">
+                      ₹{Number(poData.grandTotal || 0).toFixed(2)}
+                    </span>
+
                   </div>
+
                 </div>
+
               </div>
 
-              {/* COMPLIANCE CLAUSES & LEGAL ATTESTATION LAYER */}
-              <div className="flex justify-between items-end mt-3 pt-6 border-t border-slate-200 min-h-[120px]">
+              {/* TERMS */}
+              <div className="flex justify-between mt-3 border-t border-slate-200 pt-2">
+
                 <div className="max-w-[60%]">
-                  <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wide mb-2">
-                    {templateConfig.termsTitle || "Terms & Conditions"}
-                  </h5>
-                  <ul className="list-disc pl-5 text-[10px] text-slate-600 space-y-1.5 leading-relaxed font-medium">
-                    {templateConfig.terms?.map((term, index) => (
-                      <li key={index}>{term}</li>
-                    ))}
+
+                  <h4 className="text-[13px] font-black uppercase tracking-wider text-slate-800 mb-4">
+                    TERMS & CONDITIONS
+                  </h4>
+
+                  <ul className="space-y-3 text-[13px] text-slate-600">
+
+                    <li>• Payment Terms: Within 30 days after delivery</li>
+
+                    <li>• Delivery at: Chennai</li>
+
+                    <li>• Packing: Included</li>
+
+                    <li>• Freight & Insurance: Included</li>
+
+                    <li>• Delivery: Four weeks Maximum</li>
+
                   </ul>
+
                 </div>
 
-                <div className="text-center space-y-3">
-                  {templateConfig.signatureText && (
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{templateConfig.signatureText}</p>
-                  )}
-                  {templateConfig.signatureImage && (
-                    <img src={templateConfig.signatureImage} alt="Validation Matrix Seal" className="h-12 w-auto object-contain mx-auto" />
-                  )}
-                  <div className="border-t-2 border-slate-400 w-44 pt-2 text-[10px] font-bold text-slate-800 tracking-wide">
-                    {templateConfig.signatureLabel || "Authorized Signature"}
+                {/* SIGN */}
+                <div className="text-center flex flex-col justify-end">
+
+                  <p className="text-[11px] uppercase tracking-[3px] font-bold text-slate-400 mb-16">
+                    FOR GARUDA AEROSPACE PVT LTD
+                  </p>
+
+                  <div className="border-t border-slate-400 w-[220px] pt-3 text-[13px] font-bold text-slate-800">
+                    Authorized Signature
                   </div>
+
                 </div>
+
               </div>
 
-              {/* RUNTIME SYSTEM REGULATION RECONCILIATION FOOTER BLOCK */}
-              <div className="mt-2 border-t border-slate-200 pt-2 text-center space-y-2 text-slate-500 text-[10px] font-semibold tracking-wide">
-                <h6 className="font-bold text-slate-800 text-xs m-0 mb-1">{templateConfig.footerTitle}</h6>
-                <div className="flex justify-center flex-wrap leading-relaxed">
-                  {templateConfig.footerDetails?.map((line, index) => (
-                    <p key={index}>{line}</p>
-                  ))}
-                </div>
-                {templateConfig.footerNote && <p className="text-slate-400 italic mt-1 text-[9px] font-normal">{templateConfig.footerNote}</p>}
+              {/* FOOTER */}
+              <div className="mt-10 border-t border-slate-200 pt-5 text-center text-[12px] font-semibold text-slate-500 tracking-wide">
+                inventory@garudaaerospace.com +91 98841 04280
               </div>
+
             </div>
 
           </div>
 
         </div>
+
       </div>
 
     </div>
