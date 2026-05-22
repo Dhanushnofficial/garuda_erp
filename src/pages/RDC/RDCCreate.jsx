@@ -70,9 +70,13 @@ const CreateRDC = () => {
   const generateRDC = async () => {
     try {
       // 1. Fetch RDC Documents to calculate next RDC Number
-      const rdcSnapshot = await getDocs(collection(db, "rdcDocuments"));
-      const count = rdcSnapshot.docs.length + 1;
+     const rdcSnapshot = await getDocs(collection(db, "rdcDocuments"));
+
+      // START FROM 067
+      const count = rdcSnapshot.docs.length + 67;
+
       const newRDCNumber = `GA/D/26-27/RDC/${String(count).padStart(3, "0")}`;
+
       setRdcNumber(newRDCNumber);
 
       // 2. Fetch and track maximum gate pass configuration
