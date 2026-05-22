@@ -384,6 +384,18 @@ const Sidebar = () => {
 
               </div>
             )}
+
+             <Link
+                  to="/qc/create"
+                  className={`flex items-center gap-3 p-2.5 rounded-lg text-xs font-medium ${
+                    location.pathname === "/qc/create"
+                      ? activeStyle
+                      : normalStyle
+                  }`}
+                >
+                  <FaPlus className="shrink-0" />
+                  QC Create
+                </Link>
           </div>
 
         </div>
