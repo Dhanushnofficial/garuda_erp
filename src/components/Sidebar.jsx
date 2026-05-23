@@ -384,19 +384,69 @@ const Sidebar = () => {
 
               </div>
             )}
-
-             <Link
-                  to="/qc/create"
-                  className={`flex items-center gap-3 p-2.5 rounded-lg text-xs font-medium ${
-                    location.pathname === "/qc/create"
-                      ? activeStyle
-                      : normalStyle
-                  }`}
-                >
-                  <FaPlus className="shrink-0" />
-                  QC Create
-                </Link>
+                
           </div>
+          {/* QC */}
+            <div className="rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/40">
+
+            <button
+              onClick={() => toggleDropdown("qc")}
+              className="w-full flex items-center justify-between p-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-semibold"
+            >
+              <div className="flex items-center gap-3">
+                <FaFileAlt className="text-slate-400 text-base shrink-0" />
+                <span>QC Inspection Report</span>
+              </div>
+
+              {activeDropdown === "qc" ? (
+                <FaChevronUp className="text-[10px]" />
+              ) : (
+                <FaChevronDown className="text-[10px]" />
+              )}
+            </button>
+
+            {activeDropdown === "qc" && (
+              <div className="flex flex-col gap-1 p-1.5 bg-slate-950/60 border-t border-slate-900">
+
+                  <Link
+                      to="/qc/create"
+                      className={`flex items-center gap-3 p-2.5 rounded-lg text-xs font-medium ${
+                        location.pathname === "/qc/create"
+                          ? activeStyle
+                          : normalStyle
+                      }`}
+                    >
+                      <FaPlus className="shrink-0" />
+                      QC Create
+                </Link>
+                <Link 
+                    to="/qc/history"
+                    className={`flex items-center gap-3 p-2.5 rounded-lg text-xs font-medium ${
+                      location.pathname === "/qc/history"
+                        ? activeStyle
+                        : normalStyle
+                    }`}
+                  >
+                    <FaHistory className="shrink-0" />
+                    QC History
+                </Link>
+                <Link 
+                    to="/qc/analyze"
+                    className={`flex items-center gap-3 p-2.5 rounded-lg text-xs font-medium ${
+                      location.pathname === "/qc/analyze"
+                        ? activeStyle
+                        : normalStyle
+                    }`}
+                  >
+                    <FaHistory className="shrink-0" />
+                    QC Analytics
+                </Link>
+               
+
+              </div>
+            )}
+                
+            </div>
 
         </div>
       </div>

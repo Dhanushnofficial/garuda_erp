@@ -103,6 +103,14 @@ import AnalyzeSDC from "./pages/SDC/AnalyzeSDC";
 
 import CreateQC from "./pages/QC/QCcreate";
 
+import QCHistory from "./pages/QC/QCHistory";
+
+import QCEdit from "./pages/QC/QCEdit";
+
+import QCPreview from "./pages/QC/QCPreview";
+
+import QCAnalyze from "./pages/QC/QCAnalyze";
+
 // import QCHistory from "./pages/QC/QCHistory";
 // =========================
 // COMBINED EXPORT
@@ -340,6 +348,26 @@ function App() {
               <Route
                 path="/qc/create"
                 element={<CreateQC />} 
+              />
+
+              <Route
+                path="/qc/history"
+                element={<QCHistory />} 
+              />
+
+              <Route
+                path="/qc/edit/:id"
+                element={<QCEdit />} 
+              />
+              
+              <Route
+                path="/qc/preview/:id"
+                element={<QCPreview />} 
+              />
+
+              <Route
+                path="/qc/analyze"
+                element={<QCAnalyze />} 
               />
 
           </Routes>
