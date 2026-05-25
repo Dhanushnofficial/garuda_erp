@@ -48,7 +48,7 @@ const QCcreate = () => {
       vendorName: "",
       invoiceNo: "",
       invoiceDate: getTodayDate(),
-      vehicleNo: "",
+      vehicleNo: "N/A",
       storeLocation: "",
     });
 
