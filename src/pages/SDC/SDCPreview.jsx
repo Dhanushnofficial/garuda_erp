@@ -123,7 +123,7 @@ const SDCPreview = () => {
     return (
       <div className="fixed inset-0 bg-slate-50 flex items-center justify-center z-[9999]">
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin shadow-md"></div>
+          <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin shadow-md"></div>
           <h1 className="mt-6 text-xl font-bold text-slate-800 tracking-wide">Retrieving SDC Manifest...</h1>
           <p className="text-sm text-slate-400 mt-1">Please hold on a moment.</p>
         </div>

@@ -417,7 +417,7 @@ const QCPreview = () => {
                   </td>
 
                   <td className="border border-blue-900 p-2 text-center text-[10px]">
-                    {row.uom}
+                    NOS
                   </td>
 
                   <td className="border border-blue-900 p-2 text-center text-[10px]">
@@ -445,7 +445,7 @@ const QCPreview = () => {
                   </td>
 
                   <td className="border border-blue-900 p-2 text-[10px] break-words">
-                    {row.remarks}
+                    Good
                   </td>
 
                 </tr>

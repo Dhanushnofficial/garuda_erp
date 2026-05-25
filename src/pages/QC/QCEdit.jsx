@@ -917,7 +917,7 @@ const QCEdit = () => {
               className="border rounded-2xl p-5 bg-slate-50"
             >
 
-              <h3 className="font-black text-lg mb-5">
+              <h3 className="font-black text-[14px] mb-5">
                 {section.label}
               </h3>
 

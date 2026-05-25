@@ -172,7 +172,7 @@ const TemplateSettings = () => {
       {/* CORE LOADING STATUS BAR */}
       {loading && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 font-medium text-sm rounded-xl p-4 mb-6 flex items-center gap-3 animate-pulse">
-          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
           Synchronizing Template Node Records with Database Server...
         </div>
       )}

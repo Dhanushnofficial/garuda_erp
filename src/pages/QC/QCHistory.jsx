@@ -224,7 +224,7 @@ const QCHistory = () => {
 
         <div className="text-center">
 
-          <div className="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="w-14 h-14 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
 
           <p className="text-slate-500 mt-5 tracking-widest text-sm uppercase font-bold">
             Loading QC Reports...

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import html2pdf from "html2pdf.js";
+import React, {
+  useEffect,
+  useState,
+} from "react";
 
 import {
   collection,
@@ -10,81 +10,94 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-import { db } from "../../firebase/firebase";
-
 import {
   FaPlus,
   FaTrash,
-  FaFileDownload,
+  FaSave,
 } from "react-icons/fa";
 
-const QCCreate = () => {
+import html2pdf from "html2pdf.js";
 
-  const pdfRef = useRef();
+import { db } from "../../firebase/firebase";
+
+const QCcreate = () => {
+
+  // ======================================================
+  // DATE
+  // ======================================================
+
+  const getTodayDate = () => {
+    return new Date()
+      .toISOString()
+      .split("T")[0];
+  };
 
   // ======================================================
   // QC NUMBER
   // ======================================================
 
-  const [qcNumber, setQcNumber] = useState("");
+  const [qcNumber, setQcNumber] =
+    useState("");
 
   // ======================================================
   // FORM DATA
   // ======================================================
 
-  const [formData, setFormData] = useState({
-    vendorName: "",
-    invoiceNo: "",
-    invoiceDate: "",
-    vehicleNo: "",
-    storeLocation: "",
-  });
-
-  // ======================================================
-  // TABLE ROWS
-  // ======================================================
-
-  const [rows, setRows] = useState([
-    {
-      partNo: "",
-      description: "",
-      uom: "",
-      qty: "",
-      recdQty: "",
-      inspQty: "",
-      accQty: "",
-      rejQty: "",
-      status: "",
-      remarks: "",
-    },
-  ]);
+  const [formData, setFormData] =
+    useState({
+      vendorName: "",
+      invoiceNo: "",
+      invoiceDate: getTodayDate(),
+      vehicleNo: "",
+      storeLocation: "",
+    });
 
   // ======================================================
   // SIGNATURES
   // ======================================================
 
-  const [signatures, setSignatures] = useState({
-    inspectedBy: {
-      name: "",
-      date: "",
-    },
+  const [signatures, setSignatures] =
+    useState({
+      inspectedBy: {
+        name: "SUBASH",
+        date: getTodayDate(),
+      },
 
-    verifiedBy: {
-      name: "",
-      date: "",
-    },
+      verifiedBy: {
+        name: "ROHITH",
+        date: getTodayDate(),
+      },
 
-    storeIncharge: {
-      name: "",
-      date: "",
-    },
+      storeIncharge: {
+        name: "ARSHAD",
+        date: getTodayDate(),
+      },
 
-    approvedBy: {
-      name: "",
-      date: "",
-    },
-  });
+      approvedBy: {
+        name: "PRETHIVI",
+        date: getTodayDate(),
+      },
+    });
 
+  // ======================================================
+  // ROWS
+  // ======================================================
+
+
+const [rows, setRows] = useState([
+  {
+    partNo: "",
+    description: "",
+    uom: "NOS",
+    qty: "",
+    recdQty: "",
+    inspQty: "",
+    accQty: "",
+    rejQty: 0,
+    status: "Pass",
+    remarks: "GOOD",
+  },
+]);
   // ======================================================
   // GENERATE QC NUMBER
   // ======================================================
@@ -93,63 +106,106 @@ const QCCreate = () => {
     generateQCNumber();
   }, []);
 
-  const generateQCNumber = async () => {
+  const generateQCNumber =
+    async () => {
 
-    try {
+      try {
 
-      const snapshot = await getDocs(
-        collection(db, "qcReports")
-      );
+        const snapshot =
+          await getDocs(
+            collection(
+              db,
+              "qcReports"
+            )
+          );
 
-      const count = snapshot.size + 1;
+        const count =
+          snapshot.size + 1;
 
-      const formatted = String(count).padStart(
-        4,
-        "0"
-      );
+        const year =
+          new Date().getFullYear();
 
-      setQcNumber(`QC-${formatted}`);
+        const formatted =
+          String(count).padStart(
+            4,
+            "0"
+          );
 
-    } catch (error) {
-      console.log(error);
-    }
-  };
+        setQcNumber(
+          `GAL/QC/${year}/${formatted}`
+        );
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   // ======================================================
-  // HANDLE FORM
+  // FORM CHANGE
   // ======================================================
 
   const handleChange = (e) => {
 
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]:
+        e.target.value,
     });
   };
 
   // ======================================================
-  // HANDLE ROW CHANGE
-  // ======================================================
+// DOWNLOAD PDF
+// ======================================================
 
-  const handleRowChange = (
-    index,
-    field,
-    value
-  ) => {
+const downloadPDF = () => {
 
-    const updatedRows = [...rows];
+  const element =
+    document.getElementById(
+      "qc-preview"
+    );
 
-    updatedRows[index][field] = value;
+  if (!element) {
+    alert("Preview not found");
+    return;
+  }
 
-    setRows(updatedRows);
+  const options = {
+
+    margin: 0,
+
+    filename:
+      `${qcNumber}.pdf`,
+
+    image: {
+      type: "jpeg",
+      quality: 1,
+    },
+
+    html2canvas: {
+      scale: 3,
+      useCORS: true,
+      scrollY: 0,
+    },
+
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait",
+    },
   };
 
+  html2pdf()
+    .set(options)
+    .from(element)
+    .save();
+};
+
   // ======================================================
-  // HANDLE SIGNATURE
+  // SIGNATURE CHANGE
   // ======================================================
 
   const handleSignatureChange = (
-    section,
+    role,
     field,
     value
   ) => {
@@ -157,1172 +213,942 @@ const QCCreate = () => {
     setSignatures({
       ...signatures,
 
-      [section]: {
-        ...signatures[section],
+      [role]: {
+        ...signatures[role],
         [field]: value,
       },
     });
   };
 
   // ======================================================
+  // ROW CHANGE
+  // ======================================================
+
+const handleRowChange = (
+  index,
+  field,
+  value
+) => {
+
+  const updatedRows = [...rows];
+
+  // UPDATE FIELD
+
+  updatedRows[index][field] =
+    value;
+
+  // ====================================================
+  // AUTO CALCULATION
+  // ====================================================
+
+  if (field === "qty") {
+
+    // AUTO FILL
+
+    updatedRows[index].recdQty =
+      value;
+
+    updatedRows[index].inspQty =
+      value;
+
+    updatedRows[index].accQty =
+      value;
+
+    updatedRows[index].rejQty =
+      0;
+
+    updatedRows[index].status =
+      "Pass";
+
+    updatedRows[index].remarks =
+      "Good";
+  }
+
+  // ====================================================
+  // ACCEPTED QTY CHANGE
+  // ====================================================
+
+  const inspQty = Number(
+    updatedRows[index]
+      .inspQty || 0
+  );
+
+  const accQty = Number(
+    updatedRows[index]
+      .accQty || 0
+  );
+
+  // REJECT CALCULATION
+
+  const rejected =
+    inspQty - accQty;
+
+  updatedRows[index].rejQty =
+    rejected >= 0
+      ? rejected
+      : 0;
+
+  // STATUS + REMARKS
+
+  if (
+    updatedRows[index].rejQty > 0
+  ) {
+
+    updatedRows[index].status =
+      "REJECTED";
+
+    updatedRows[index].remarks =
+      "REJECTED MATERIAL";
+
+  } else {
+
+    updatedRows[index].status =
+      "Pass";
+
+    updatedRows[index].remarks =
+      "Good";
+  }
+
+  setRows(updatedRows);
+};
+
+
+  // ======================================================
   // ADD ROW
   // ======================================================
 
-  const addRow = () => {
+const addRow = () => {
 
-    setRows([
-      ...rows,
+  setRows([
 
-      {
-        partNo: "",
-        description: "",
-        uom: "",
-        qty: "",
-        recdQty: "",
-        inspQty: "",
-        accQty: "",
-        rejQty: "",
-        status: "",
-        remarks: "",
-      },
-    ]);
-  };
+    ...rows,
 
+    {
+      partNo: "",
+      description: "",
+      uom: "NOS",
+      qty: "",
+      recdQty: "",
+      inspQty: "",
+      accQty: "",
+      rejQty: 0,
+      status: "Pass",
+      remarks: "Good",
+    },
+
+  ]);
+};
   // ======================================================
   // REMOVE ROW
   // ======================================================
 
   const removeRow = (index) => {
 
-    if (rows.length === 1) return;
-
-    const updatedRows = [...rows];
-
-    updatedRows.splice(index, 1);
+    const updatedRows =
+      rows.filter(
+        (_, i) => i !== index
+      );
 
     setRows(updatedRows);
   };
 
   // ======================================================
+  // SAVE QC
+  // ======================================================
+
+  const handleSubmit =
+    async () => {
+
+      try {
+
+        await addDoc(
+          collection(
+            db,
+            "qcReports"
+          ),
+
+          {
+            qcNumber,
+            formData,
+            rows,
+            signatures,
+            createdAt:
+              Timestamp.now(),
+          }
+        );
+
+        alert(
+          "QC Report Saved Successfully"
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert(
+          "Error Saving QC"
+        );
+      }
+    };
+
+  // ======================================================
   // TOTALS
   // ======================================================
 
-  const totalQty = rows.reduce(
-    (acc, item) => acc + Number(item.qty || 0),
-    0
-  );
-
-  const totalRecd = rows.reduce(
-    (acc, item) =>
-      acc + Number(item.recdQty || 0),
-    0
-  );
-
   const totalInsp = rows.reduce(
-    (acc, item) =>
-      acc + Number(item.inspQty || 0),
+    (a, b) =>
+      a +
+      Number(
+        b.inspQty || 0
+      ),
     0
   );
 
   const totalAcc = rows.reduce(
-    (acc, item) =>
-      acc + Number(item.accQty || 0),
+    (a, b) =>
+      a +
+      Number(
+        b.accQty || 0
+      ),
     0
   );
 
   const totalRej = rows.reduce(
-    (acc, item) =>
-      acc + Number(item.rejQty || 0),
-    0
-  );
+  (a, b) =>
+    a +
+    Number(
+      b.rejQty || 0
+    ),
+  0
+);
 
   // ======================================================
-  // SAVE & DOWNLOAD PDF
+  // UI
   // ======================================================
-
- // ======================================================
-// SAVE & DOWNLOAD PDF
-// ======================================================
-
-const downloadPDF = async () => {
-
-  try {
-
-    // =========================================
-    // SAVE FIREBASE
-    // =========================================
-
-    await addDoc(
-      collection(db, "qcReports"),
-      {
-        qcNumber,
-
-        formData,
-
-        rows,
-
-        signatures,
-
-        totals: {
-          totalQty,
-          totalRecd,
-          totalInsp,
-          totalAcc,
-          totalRej,
-        },
-
-        createdAt: Timestamp.now(),
-      }
-    );
-
-    // =========================================
-    // PDF ELEMENT
-    // =========================================
-
-    const element = pdfRef.current;
-
-    // =========================================
-    // PDF OPTIONS
-    // =========================================
-
-    const options = {
-
-      margin: [5, 5, 5, 5],
-
-      filename: `${qcNumber}.pdf`,
-
-      image: {
-        type: "jpeg",
-        quality: 1,
-      },
-
-      html2canvas: {
-  scale: 2,
-  useCORS: true,
-  scrollY: 0,
-  letterRendering: true,
-},
-
-      jsPDF: {
-        unit: "mm",
-        format: "a4",
-        orientation: "portrait",
-      },
-
-      // IMPORTANT
-
-      pagebreak: {
-        mode: [
-          "css",
-          "legacy",
-        ],
-
-        avoid: [
-          ".sign-section",
-          ".table-row",
-        ],
-      },
-    };
-
-    // =========================================
-    // GENERATE PDF
-    // =========================================
-
-    await html2pdf()
-      .set(options)
-      .from(element)
-      .save();
-
-    // =========================================
-    // NEXT QC NUMBER
-    // =========================================
-
-    generateQCNumber();
-
-    alert(
-      "QC Report Saved Successfully"
-    );
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert(
-      "Error generating PDF"
-    );
-  }
-};
-
   return (
-    <div className="min-h-screen bg-slate-100 p-6 ml-[250px]">
 
-      {/* ======================================================
-          TOP HEADER
-      ====================================================== */}
+<div className="min-h-screen bg-slate-100 ml-[250px] p-6">
 
-      <div className="bg-slate-900 rounded-3xl shadow-2xl p-6 mb-8 flex justify-between items-center">
+  {/* =====================================================
+      TOP FORM SECTION
+  ===================================================== */}
 
-        <div>
+  <div className="bg-white rounded-[30px] shadow-xl p-8 mb-8">
 
-          <h1 className="text-2xl font-black text-white">
-            QC Incoming Inspection
-          </h1>
+    {/* HEADER */}
 
-          <p className="text-slate-400 mt-2">
-            Quality Control Inspection Report
-          </p>
+    <div className="flex justify-between items-center mb-8">
 
-        </div>
+      <div>
+
+        <h1 className="text-[48px] font-black text-slate-800 leading-none">
+          QC CREATE
+        </h1>
+
+        <p className="text-slate-500 mt-2 text-lg">
+          Incoming Inspection Report
+        </p>
+
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 px-6 py-4 rounded-2xl">
+
+        <h2 className="text-blue-700 font-black text-[14px] mb-5">
+          {qcNumber}
+        </h2>
+        <div className="mb-6">
+
+  <button
+    onClick={async () => {
+
+      await handleSubmit();
+
+      setTimeout(() => {
+
+        downloadPDF();
+
+      }, 1000);
+
+    }}
+    className="bg-gradient-to-r from-green-600 to-blue-700 hover:scale-[1.02] transition-all text-white px-10 py-5 rounded-2xl font-black flex items-center gap-4 shadow-2xl"
+  >
+
+    <FaSave />
+
+    Save & Download QC Report
+
+  </button>
+
+</div>
+
+      </div>
+
+    </div>
+
+    {/* =====================================================
+        VENDOR DETAILS
+    ===================================================== */}
+
+    <div className="mb-10">
+
+      <h2 className="text-3xl font-black text-slate-800 mb-6">
+        Vendor Details
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <input
+          type="text"
+          name="vendorName"
+          placeholder="Vendor Name"
+          value={formData.vendorName}
+          onChange={handleChange}
+          className="border border-slate-200 p-5 rounded-2xl"
+        />
+
+        <input
+          type="text"
+          name="invoiceNo"
+          placeholder="Invoice No"
+          value={formData.invoiceNo}
+          onChange={handleChange}
+          className="border border-slate-200 p-5 rounded-2xl"
+        />
+
+        <input
+          type="date"
+          name="invoiceDate"
+          value={formData.invoiceDate}
+          onChange={handleChange}
+          className="border border-slate-200 p-5 rounded-2xl"
+        />
+
+        <input
+          type="text"
+          name="vehicleNo"
+          placeholder="Vehicle No"
+          value={formData.vehicleNo}
+          onChange={handleChange}
+          className="border border-slate-200 p-5 rounded-2xl"
+        />
+
+      </div>
+
+      <textarea
+        name="storeLocation"
+        placeholder="Store Location"
+        value={formData.storeLocation}
+        onChange={handleChange}
+        className="border border-slate-200 p-5 rounded-2xl w-full mt-5 h-32 resize-none"
+      />
+
+    </div>
+
+    {/* =====================================================
+        ITEM TABLE
+    ===================================================== */}
+
+    <div className="mb-10">
+
+      <div className="flex justify-between items-center mb-5">
+
+        <h2 className="text-3xl font-black text-slate-800">
+          Inspection Items
+        </h2>
 
         <button
-          onClick={downloadPDF}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-2xl font-bold flex items-center gap-3"
+          onClick={addRow}
+          className="bg-blue-600 text-white px-6 py-4 rounded-2xl flex items-center gap-3 font-black"
         >
-          <FaFileDownload />
-
-          Save & Download
+          <FaPlus />
+          Add Row
         </button>
 
       </div>
 
-      {/* ======================================================
-          FORM SECTION
-      ====================================================== */}
+      <div className="overflow-auto border border-slate-200 rounded-2xl">
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <table className="w-full border-collapse">
 
-        {/* LEFT */}
+          <thead>
 
-        <div className="bg-white rounded-3xl shadow-lg border p-6">
+            <tr className="bg-slate-800 text-white">
 
-          <h2 className="text-2xl font-black mb-6">
-            Vendor Details
-          </h2>
+              <th className="border p-4">S.No</th>
+              <th className="border p-4">Part No</th>
+              <th className="border p-4">Description</th>
+              <th className="border p-4">Qty</th>
+              <th className="border p-4">Insp</th>
+              <th className="border p-4">Acc</th>
+              <th className="border p-4">Rej</th>
+              <th className="border p-4">Status</th>
+              <th className="border p-4">Delete</th>
 
-          <div className="space-y-5">
+            </tr>
 
-            <div>
-              <label className="font-bold text-sm">
-                Vendor Name
-              </label>
+          </thead>
 
-              <input
-                type="text"
-                name="vendorName"
-                value={formData.vendorName}
-                onChange={handleChange}
-                className="w-full border rounded-xl p-3 mt-2"
-              />
-            </div>
+          <tbody>
 
-            <div>
-              <label className="font-bold text-sm">
-                Invoice No
-              </label>
+            {rows.map((row, index) => (
 
-              <input
-                type="text"
-                name="invoiceNo"
-                value={formData.invoiceNo}
-                onChange={handleChange}
-                className="w-full border rounded-xl p-3 mt-2"
-              />
-            </div>
+              <tr key={index}>
 
-            <div>
-              <label className="font-bold text-sm">
-                Vehicle No
-              </label>
+                <td className="border p-3 text-center">
+                  {index + 1}
+                </td>
 
-              <input
-                type="text"
-                name="vehicleNo"
-                value={formData.vehicleNo}
-                onChange={handleChange}
-                className="w-full border rounded-xl p-3 mt-2"
-              />
-            </div>
+                <td className="border p-2">
 
-          </div>
+                  <input
+                    type="text"
+                    value={row.partNo}
+                    onChange={(e) =>
+                      handleRowChange(
+                        index,
+                        "partNo",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border rounded-xl p-3"
+                  />
 
-        </div>
+                </td>
 
-        {/* RIGHT */}
+                <td className="border p-2">
 
-        <div className="bg-white rounded-3xl shadow-lg border p-6">
+                  <input
+                    type="text"
+                    value={row.description}
+                    onChange={(e) =>
+                      handleRowChange(
+                        index,
+                        "description",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border rounded-xl p-3"
+                  />
 
-          <h2 className="text-2xl font-black mb-6">
-            Inspection Details
-          </h2>
+                </td>
 
-          <div className="space-y-5">
+                <td className="border p-2">
 
-            <div>
-              <label className="font-bold text-sm">
-                Invoice Date
-              </label>
+                  <input
+                    type="number"
+                    value={row.qty}
+                    onChange={(e) =>
+                      handleRowChange(
+                        index,
+                        "qty",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border rounded-xl p-3"
+                  />
 
-              <input
-                type="date"
-                name="invoiceDate"
-                value={formData.invoiceDate}
-                onChange={handleChange}
-                className="w-full border rounded-xl p-3 mt-2"
-              />
-            </div>
+                </td>
 
-            <div>
-              <label className="font-bold text-sm">
-                Store Location
-              </label>
+                <td className="border p-2">
 
-              <textarea
-                name="storeLocation"
-                value={formData.storeLocation}
-                onChange={handleChange}
-                rows="5"
-                className="w-full border rounded-xl p-3 mt-2 resize-none"
-              />
-            </div>
+                  <input
+                    type="number"
+                    value={row.inspQty}
+                    onChange={(e) =>
+                      handleRowChange(
+                        index,
+                        "inspQty",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border rounded-xl p-3"
+                  />
 
-          </div>
+                </td>
 
-        </div>
+                <td className="border p-2">
 
-      </div>
+                  <input
+                    type="number"
+                    value={row.accQty}
+                    onChange={(e) =>
+                      handleRowChange(
+                        index,
+                        "accQty",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border rounded-xl p-3"
+                  />
 
-      {/* ======================================================
-          ITEM TABLE
-      ====================================================== */}
+                </td>
 
-      <div className="bg-white rounded-3xl shadow-lg border overflow-hidden mb-8">
+                <td className="border p-2">
 
-        <div className="bg-slate-900 px-6 py-4 flex justify-between items-center">
+                  <input
+                    type="number"
+                    value={row.rejQty}
+                    readOnly
+                    className="w-full border rounded-xl p-3 bg-green-50 text-green-600"
+                  />
 
-          <div>
+                </td>
 
-            <h2 className="text-2xl font-black text-white">
-              Item Inspection Details
-            </h2>
+                <td className="border p-3 text-center">
 
-            <p className="text-slate-300 text-sm mt-1">
-              Add inspected materials & quantities
-            </p>
+                  <span
+                    className={`px-4 py-2 rounded-xl font-black ${
+                      row.status === "Pass"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {row.status}
+                  </span>
 
-          </div>
+                </td>
 
-          <button
-            onClick={addRow}
-            className="bg-white text-slate-900 px-5 py-3 rounded-xl font-bold flex items-center gap-2"
-          >
-            <FaPlus />
+                <td className="border p-3 text-center">
 
-            Add Row
-          </button>
+                  <button
+                    onClick={() =>
+                      removeRow(index)
+                    }
+                    className="bg-red-100 text-red-600 p-3 rounded-xl"
+                  >
+                    <FaTrash />
+                  </button>
 
-        </div>
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full  border-collapse">
-
-            <thead>
-
-              <tr className="bg-slate-800 text-white text-sm">
-
-                <th className="border p-3">
-                  S.No
-                </th>
-
-                <th className="border p-3">
-                  Part No / Item Code
-                </th>
-
-                <th className="border p-3">
-                  Description
-                </th>
-
-                <th className="border p-3">
-                  UOM
-                </th>
-
-                <th className="border p-3">
-                  Qty
-                </th>
-
-                <th className="border p-3">
-                  Recd Qty
-                </th>
-
-                <th className="border p-3">
-                  Insp Qty
-                </th>
-
-                <th className="border p-3">
-                  Acc Qty
-                </th>
-
-                <th className="border p-3">
-                  Rej Qty
-                </th>
-
-                <th className="border p-3">
-                  Status
-                </th>
-
-                <th className="border p-3">
-                  Remarks
-                </th>
-
-                <th className="border p-3">
-                  Action
-                </th>
+                </td>
 
               </tr>
 
-            </thead>
+            ))}
 
-            <tbody>
+          </tbody>
 
-              {rows.map((row, index) => (
+        </table>
 
-                <tr key={index}>
+      </div>
 
-                  <td className="border p-2 text-center font-bold">
-                    {index + 1}
-                  </td>
+    </div>
 
-                  <td className="border p-2">
-                    <input
-                      type="text"
-                      value={row.partNo}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "partNo",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+  </div>
 
-                  <td className="border p-2">
-                    <input
-                      type="text"
-                      value={row.description}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
 
-                  <td className="border p-2">
-                    <input
-                      type="text"
-                      value={row.uom}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "uom",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
 
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={row.qty}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "qty",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+  {/* =====================================================
+      LIVE PREVIEW BOTTOM
+  ===================================================== */}
 
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={row.recdQty}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "recdQty",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+  <div className="bg-slate-200 rounded-[30px] p-8 shadow-inner">
 
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={row.inspQty}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "inspQty",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+    <div
+      id="qc-preview"
+      className="bg-white mx-auto shadow-2xl"
+      style={{
+        width: "210mm",
+        minHeight: "297mm",
+        padding: "10mm",
+      }}
+    >
 
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={row.accQty}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "accQty",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+      {/* =====================================================
+          REPORT HEADER
+      ===================================================== */}
 
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={row.rejQty}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "rejQty",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
+      <div className="bg-[#071633] text-white text-center py-4">
 
-                  <td className="border p-2">
+        <h1 className="text-[24px] font-black">
+          INCOMING INSPECTION REPORT
+        </h1>
 
-                    <select
-                      value={row.status}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "status",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    >
-                      <option value="">
-                        Select
-                      </option>
+        <p className="tracking-[4px] mt-2 text-sm">
+          QUALITY CONTROL FORM
+        </p>
 
-                      <option value="Pass">
-                        Pass
-                      </option>
+      </div>
 
-                      <option value="Fail">
-                        Fail
-                      </option>
+     
 
-                      <option value="Hold">
-                        Hold
-                      </option>
+      {/* =====================================================
+          VENDOR TABLE
+      ===================================================== */}
 
-                    </select>
+      <div className="border border-black">
 
-                  </td>
-
-                  <td className="border p-2">
-                    <input
-                      type="text"
-                      value={row.remarks}
-                      onChange={(e) =>
-                        handleRowChange(
-                          index,
-                          "remarks",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </td>
-
-                  <td className="border p-2 text-center">
-
-                    <button
-                      onClick={() =>
-                        removeRow(index)
-                      }
-                      className="bg-red-500 text-white p-3 rounded-xl"
-                    >
-                      <FaTrash />
-                    </button>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
+        <div className="bg-slate-800 text-white text-center py-3 font-black text-[16px]">
+          1 | VENDOR & PURCHASE ORDER DETAILS
         </div>
 
-      </div>
+        <table className="w-full border-collapse">
 
-      {/* ======================================================
-          SIGNATURE INPUTS
-      ====================================================== */}
+          <tbody>
 
-      <div className="bg-white rounded-3xl shadow-lg border p-6 mb-8">
+            <tr>
 
-        <h2 className="text-2xl font-black mb-6">
-          Authorization Details
-        </h2>
+              <td className="border border-black p-2 font-black bg-slate-50">
+                Vendor Name
+              </td>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <td className="border border-black p-2">
+                {formData.vendorName}
+              </td>
 
-          {[
-            {
-              key: "inspectedBy",
-              title: "Inspected By",
-            },
+              <td className="border border-black p-2 font-black bg-slate-50">
+                Invoice Date
+              </td>
 
-            {
-              key: "verifiedBy",
-              title: "Verified By",
-            },
+              <td className="border border-black p-2">
+                {formData.invoiceDate}
+              </td>
 
-            {
-              key: "storeIncharge",
-              title: "Store Incharge",
-            },
+            </tr>
 
-            {
-              key: "approvedBy",
-              title: "Approved By",
-            },
-          ].map((item, index) => (
+            <tr>
 
-            <div
-              key={index}
-              className="border rounded-2xl p-5 bg-slate-50"
-            >
+              <td className="border border-black p-2 font-black bg-slate-50">
+                Invoice No
+              </td>
 
-              <h3 className="font-black text-lg mb-5">
-                {item.title}
-              </h3>
+              <td className="border border-black p-2">
+                {formData.invoiceNo}
+              </td>
 
-              <div className="space-y-4">
+              <td className="border border-black p-2 font-black bg-slate-50">
+                Store Location
+              </td>
 
-                <input
-                  type="text"
-                  placeholder="Enter Name"
-                  value={
-                    signatures[item.key].name
-                  }
-                  onChange={(e) =>
-                    handleSignatureChange(
-                      item.key,
-                      "name",
-                      e.target.value
-                    )
-                  }
-                  className="w-full border rounded-xl p-3"
-                />
+              <td className="border border-black p-2 break-words">
+                {formData.storeLocation}
+              </td>
 
-                <input
-                  type="date"
-                  value={
-                    signatures[item.key].date
-                  }
-                  onChange={(e) =>
-                    handleSignatureChange(
-                      item.key,
-                      "date",
-                      e.target.value
-                    )
-                  }
-                  className="w-full border rounded-xl p-3"
-                />
+            </tr>
 
-              </div>
+            <tr>
 
-            </div>
+              <td className="border border-black p-2 font-black bg-slate-50">
+                Vehicle No
+              </td>
 
-          ))}
+              <td className="border border-black p-2">
+                {formData.vehicleNo}
+              </td>
 
-        </div>
+              
+
+            </tr>
+
+          </tbody>
+
+        </table>
 
       </div>
 
-      {/* ======================================================
-          LIVE PREVIEW
-      ====================================================== */}
+      {/* =====================================================
+    ITEM DETAILS SECTION
+===================================================== */}
 
-     {/* ======================================================
-    LIVE PREVIEW
-====================================================== */}
+<div className="mt-8 border border-black">
 
-<div className="bg-slate-300 rounded-3xl p-8 overflow-auto">
+  <div className="bg-[#071633] text-white text-center py-4 border-t-4 border-orange-400">
 
-  <div
-    ref={pdfRef}
-    className="bg-white mx-auto shadow-2xl"
-   style={{
-  width: "190mm",
-  minHeight: "297mm",
-  padding: "4mm",
-  overflow: "hidden",
-  background: "#fff",
-  boxSizing: "border-box",
-}}
-  >
+    <h2 className="text-[16px] font-black">
+      2 | ITEM DETAILS & INSPECTION FINDINGS
+    </h2>
 
-    {/* QC NUMBER */}
+  </div>
 
-    {/* <div className="flex justify-end mb-4">
+  <table className="w-full border-collapse text-[14px]">
 
-      <div className="bg-slate-100 border px-4 py-2 rounded-lg font-black">
-        {qcNumber}
-      </div>
+    <thead>
 
-    </div> */}
+      <tr className="bg-slate-700 text-white">
 
-    {/* HEADER */}
+        <th className="border border-black p-2">S.No</th>
+        <th className="border border-black p-2">Part No</th>
+        <th className="border border-black p-2">Description</th>
+        <th className="border border-black p-2">UOM</th>
+        <th className="border border-black p-2">Qty</th>
+        <th className="border border-black p-2">Recd</th>
+        <th className="border border-black p-2">Insp</th>
+        <th className="border border-black p-2">Acc</th>
+        <th className="border border-black p-2">Rej</th>
+        <th className="border border-black p-2">Status</th>
+        <th className="border border-black p-2">Remarks</th>
 
-    <div className="bg-slate-900 text-white text-center py-4 rounded-t-xl">
+      </tr>
 
-      <h1 className="text-[22px]  font-black">
-        INCOMING INSPECTION REPORT
-      </h1>
+    </thead>
 
-      <p className="text-sm mt-2">
-        QUALITY CONTROL FORM
+    <tbody>
+
+      {rows.map((row, index) => (
+
+        <tr key={index}>
+
+          <td className="border border-black p-2 text-center">
+            {index + 1}
+          </td>
+
+          <td className="border border-black p-2">
+            {row.partNo}
+          </td>
+
+          <td className="border border-black p-2 break-words">
+            {row.description}
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            NOS
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            {row.qty}
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            {row.qty}
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            {row.inspQty}
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            {row.accQty}
+          </td>
+
+          <td className="border border-black p-2 text-center">
+            {row.rejQty || 0}
+          </td>
+
+          <td className="border border-black p-2 text-center font-black">
+            {row.status}
+          </td>
+
+          <td className="border border-black p-2">
+            Good
+          </td>
+
+        </tr>
+
+      ))}
+
+      {/* BLANK ROWS */}
+
+      {Array.from({
+        length: rows.length < 10 ? 0 - rows.length : 0,
+      }).map((_, index) => (
+
+        <tr key={`blank-${index}`}>
+
+          <td className="border border-black h-[42px]"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+          <td className="border border-black"></td>
+
+        </tr>
+
+      ))}
+
+      {/* TOTALS */}
+
+      <tr className="bg-blue-50 font-black">
+
+        <td
+          colSpan={4}
+          className="border border-black p-3 text-center"
+        >
+          TOTALS
+        </td>
+
+        <td className="border border-black text-center">
+          {rows.reduce((a, b) => a + Number(b.qty || 0), 0)}
+        </td>
+
+        <td className="border border-black text-center">
+          {rows.reduce((a, b) => a + Number(b.qty || 0), 0)}
+        </td>
+
+        <td className="border border-black text-center">
+          {rows.reduce((a, b) => a + Number(b.inspQty || 0), 0)}
+        </td>
+
+        <td className="border border-black text-center">
+          {rows.reduce((a, b) => a + Number(b.accQty || 0), 0)}
+        </td>
+
+        <td className="border border-black text-center">
+          {rows.reduce((a, b) => a + Number(b.rejQty || 0), 0)}
+        </td>
+
+        <td className="border border-black"></td>
+        <td className="border border-black"></td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+{/* =====================================================
+    AUTHORIZATION SECTION
+===================================================== */}
+
+<div className="mt-10 border border-black mb-10">
+
+  <div className="bg-[#071633] text-white text-center py-4 border-t-4 border-orange-400">
+
+    <h2 className="text-[16px] font-black">
+      3 | AUTHORISATION & SIGN-OFF
+    </h2>
+
+  </div>
+
+  <div className="grid grid-cols-4">
+
+    {/* INSPECTED BY */}
+
+    <div className="border border-black min-h-[260px] p-4">
+
+      <h2 className="text-center text-blue-900 font-black text-[14px] mb-10">
+        INSPECTED BY
+      </h2>
+
+      <div className="border-b border-slate-400 mt-16 mb-3"></div>
+
+      <p className="text-center text-slate-500 font-black mb-5">
+        Signature
+      </p>
+
+      <p className="font-black text-[14px]">
+        Name:
+        <span className="font-normal ml-2">
+          SUBASH
+        </span>
+      </p>
+
+      <p className="font-black text-[14px] mt-4">
+        Date:
+        <span className="font-normal ml-2">
+          {formData.invoiceDate}
+        </span>
       </p>
 
     </div>
 
-    {/* ======================================================
-        VENDOR DETAILS
-    ====================================================== */}
+    {/* VERIFIED BY */}
 
-    <div className="border border-blue-900 border-t-0">
+    <div className="border border-black min-h-[260px] p-4">
 
-      <div className="bg-slate-700 text-white text-center py-3 font-black text-[16px]">
-        1 | VENDOR & PURCHASE ORDER DETAILS
-      </div>
+      <h2 className="text-center text-blue-900 font-black text-[14px] mb-10">
+        VERIFIED BY
+      </h2>
 
-      <div className="grid grid-cols-2">
+      <div className="border-b border-slate-400 mt-16 mb-3"></div>
 
-        {/* LEFT */}
+      <p className="text-center text-slate-500 font-black mb-5">
+        Signature
+      </p>
 
-        <div className="border-r border-blue-900">
+      <p className="font-black text-[14px]">
+        Name:
+        <span className="font-normal ml-2">
+          ROHITH
+        </span>
+      </p>
 
-          <div className="flex border-b border-blue-900">
-
-            <div className="w-52 bg-slate-100 p-3 font-bold border-r border-blue-900">
-              Vendor Name
-            </div>
-
-            <div className="flex-1 p-3 break-all">
-              {formData.vendorName}
-            </div>
-
-          </div>
-
-          <div className="flex border-b border-blue-900">
-
-            <div className="w-52 bg-slate-100 p-3 font-bold border-r border-blue-900">
-              Invoice No
-            </div>
-
-            <div className="flex-1 p-3 break-all">
-              {formData.invoiceNo}
-            </div>
-
-          </div>
-
-          <div className="flex">
-
-            <div className="w-52 bg-slate-100 p-3 font-bold border-r border-blue-900">
-              Vehicle No
-            </div>
-
-            <div className="flex-1 p-3 break-all">
-              {formData.vehicleNo}
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* RIGHT */}
-
-        <div>
-
-          <div className="flex border-b border-blue-900">
-
-            <div className="w-52 bg-slate-100 p-3 font-bold border-r border-blue-900">
-              Invoice Date
-            </div>
-
-            <div className="flex-1 p-3 break-all">
-              {formData.invoiceDate}
-            </div>
-
-          </div>
-
-          <div className="flex items-stretch">
-
-            <div className="w-52 bg-slate-100 p-3 font-bold border-r border-blue-900 flex items-center">
-              Store Location
-            </div>
-
-            <div className="flex-1 p-3 break-all whitespace-normal text-[13px] leading-[20px]">
-              {formData.storeLocation}
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
+      <p className="font-black text-[14px] mt-4">
+        Date:
+        <span className="font-normal ml-2">
+          {formData.invoiceDate}
+        </span>
+      </p>
 
     </div>
 
-    {/* ======================================================
-        ITEM DETAILS TABLE
-    ====================================================== */}
+    {/* STORE INCHARGE */}
 
-    <div className="mt-6">
+    <div className="border border-black min-h-[260px] p-4">
 
-      <div className="bg-slate-900 text-white py-3 text-center font-black text-[16px] border-y-4 border-orange-400">
-        2 | ITEM DETAILS & INSPECTION FINDINGS
-      </div>
+      <h2 className="text-center text-blue-900 font-black text-[14px] mb-10">
+        STORE INCHARGE
+      </h2>
 
-<table
-  className="w-full text-[10px]"
-  style={{
-    borderCollapse: "collapse",
-    tableLayout: "fixed",
-    width: "100%",
-  }}
->
+      <div className="border-b border-slate-400 mt-16 mb-3"></div>
 
-  <thead>
+      <p className="text-center text-slate-500 font-black mb-5">
+        Signature
+      </p>
 
-    <tr className="bg-slate-700 text-white text-[10px]">
+      <p className="font-black text-[14px]">
+        Name:
+        <span className="font-normal ml-2">
+          ARSHAD
+        </span>
+      </p>
 
-      <th className="border border-blue-900 p-2 w-[4%]">
-        S.No
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[10%]">
-        Part No
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[16%]">
-        Description
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[6%]">
-        UOM
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[6%]">
-        Qty
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[7%]">
-        Recd
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[7%]">
-        Insp
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[7%]">
-        Acc
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[7%]">
-        Rej
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[8%]">
-        Status
-      </th>
-
-      <th className="border border-blue-900 p-2 w-[12%]">
-        Remarks
-      </th>
-
-    </tr>
-
-  </thead>
-
-  <tbody>
-
-    {/* DYNAMIC ROWS */}
-
-    {rows.map((row, index) => (
-
-      <tr
-        key={index}
-        className="table-row"
-      >
-
-        <td className="border border-blue-900 p-2 text-center">
-          {index + 1}
-        </td>
-
-        <td className="border border-blue-900 p-2 break-all">
-          {row.partNo}
-        </td>
-
-        <td className="border border-blue-900 p-2 break-words">
-          {row.description}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.uom}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.qty}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.recdQty}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.inspQty}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.accQty}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center">
-          {row.rejQty}
-        </td>
-
-        <td className="border border-blue-900 p-2 text-center font-bold">
-          {row.status}
-        </td>
-
-        <td className="border border-blue-900 p-2 break-words">
-          {row.remarks}
-        </td>
-
-      </tr>
-
-    ))}
-
-    {/* EMPTY ROWS */}
-
-    {Array.from({
-      length:
-        rows.length < 12
-          ? 1 - rows.length
-          : 0,
-    }).map((_, index) => (
-
-      <tr
-        key={`empty-${index}`}
-        className="h-[38px]"
-      >
-
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-        <td className="border border-blue-900"></td>
-
-      </tr>
-
-    ))}
-
-    {/* TOTALS */}
-
-    <tr className="bg-slate-100 font-bold">
-
-      <td
-        colSpan={4}
-        className="border border-blue-900 p-3 text-center"
-      >
-        TOTALS
-      </td>
-
-      <td className="border border-blue-900 p-2 text-center">
-        {totalQty}
-      </td>
-
-      <td className="border border-blue-900 p-2 text-center">
-        {totalRecd}
-      </td>
-
-      <td className="border border-blue-900 p-2 text-center">
-        {totalInsp}
-      </td>
-
-      <td className="border border-blue-900 p-2 text-center">
-        {totalAcc}
-      </td>
-
-      <td className="border border-blue-900 p-2 text-center">
-        {totalRej}
-      </td>
-
-      <td className="border border-blue-900"></td>
-
-      <td className="border border-blue-900"></td>
-
-    </tr>
-
-  </tbody>
-
-</table>
+      <p className="font-black text-[14px] mt-4">
+        Date:
+        <span className="font-normal ml-2">
+          {formData.invoiceDate}
+        </span>
+      </p>
 
     </div>
 
-    {/* ======================================================
-        SIGN SECTION
-    ====================================================== */}
-<div>
-        <div
-      className="pt-10 sign-section"
-      style={{
-        pageBreakInside: "avoid",
-        breakInside: "avoid",
-      }}
-    >
+    {/* APPROVED BY */}
 
-      <div className="bg-slate-900 text-white py-4 text-center font-black text-[16px] border-y-4 border-orange-400">
-        3 | AUTHORISATION & SIGN-OFF
-      </div>
+    <div className="border border-black min-h-[260px] p-4">
 
-      <div className="grid grid-cols-4 border-2 border-blue-900 border-t-0">
+      <h2 className="text-center text-blue-900 font-black text-[14px] mb-10">
+        APPROVED BY
+      </h2>
 
-        {[
-          {
-            title: "INSPECTED BY",
-            data: signatures.inspectedBy,
-          },
+      <div className="border-b border-slate-400 mt-16 mb-3"></div>
 
-          {
-            title: "VERIFIED BY",
-            data: signatures.verifiedBy,
-          },
+      <p className="text-center text-slate-500 font-black mb-5">
+        Signature
+      </p>
 
-          {
-            title: "STORE INCHARGE",
-            data: signatures.storeIncharge,
-          },
+      <p className="font-black text-[14px]">
+        Name:
+        <span className="font-normal ml-2">
+          PRETHIVI
+        </span>
+      </p>
 
-          {
-            title: "APPROVED BY",
-            data: signatures.approvedBy,
-          },
-        ].map((item, index) => (
-
-          <div
-            key={index}
-            className="border-r border-blue-900 last:border-r-0 min-h-[220px] flex flex-col"
-          >
-
-            <div className="bg-slate-100 border-b border-blue-900 text-center py-3">
-
-              <h2 className="font-black text-blue-900">
-                {item.title}
-              </h2>
-
-            </div>
-
-            <div className="flex-1 flex flex-col justify-end p-5">
-
-              <div className="mb-10">
-
-                <div className="h-14 border-b border-slate-500"></div>
-
-                <p className="text-center text-xs text-slate-500 mt-2 font-bold">
-                  Signature
-                </p>
-
-              </div>
-
-              <div className="mb-4 text-sm flex">
-
-                <span className="font-black">
-                  Name
-                </span>
-                <span className="font-black">
-                  :
-                </span>
-
-                <span className="ml-2">
-                  {item.data.name || "____________"}
-                </span>
-
-              </div>
-
-              <div className="text-sm flex">
-
-                <span className="font-black">
-                  Date 
-                </span>
-                <span className="font-black">
-                  :
-                </span>
-
-
-                <span className="ml-2">
-                  {item.data.date || "____________"}
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
+      <p className="font-black text-[14px] mt-4">
+        Date:
+        <span className="font-normal ml-2">
+          {formData.invoiceDate}
+        </span>
+      </p>
 
     </div>
-</div>
-    
 
   </div>
 
 </div>
 
     </div>
-  );
+
+  </div>
+
+</div>
+
+);
+
 };
 
-export default QCCreate;
+export default QCcreate;
