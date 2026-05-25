@@ -1041,7 +1041,17 @@ const addRow = () => {
       <p className="font-black text-[14px] mt-4">
         Date:
         <span className="font-normal ml-2">
-          {formData.invoiceDate}
+
+          {
+            new Date(
+              new Date(formData.invoiceDate).setDate(
+                new Date(formData.invoiceDate).getDate() + 5
+              )
+            )
+              .toISOString()
+              .split("T")[0]
+          }
+
         </span>
       </p>
 
@@ -1071,10 +1081,19 @@ const addRow = () => {
       <p className="font-black text-[14px] mt-4">
         Date:
         <span className="font-normal ml-2">
-          {formData.invoiceDate}
+
+          {
+            new Date(
+              new Date(formData.invoiceDate).setDate(
+                new Date(formData.invoiceDate).getDate() + 5
+              )
+            )
+              .toISOString()
+              .split("T")[0]
+          }
+
         </span>
       </p>
-
     </div>
 
     {/* STORE INCHARGE */}
@@ -1098,13 +1117,22 @@ const addRow = () => {
         </span>
       </p>
 
-      <p className="font-black text-[14px] mt-4">
-        Date:
-        <span className="font-normal ml-2">
-          {formData.invoiceDate}
-        </span>
-      </p>
+    <p className="font-black text-[14px] mt-4">
+      Date:
+      <span className="font-normal ml-2">
 
+        {
+          new Date(
+            new Date(formData.invoiceDate).setDate(
+              new Date(formData.invoiceDate).getDate() + 5
+            )
+          )
+            .toISOString()
+            .split("T")[0]
+        }
+
+      </span>
+    </p>
     </div>
 
     {/* APPROVED BY */}
@@ -1128,13 +1156,22 @@ const addRow = () => {
         </span>
       </p>
 
-      <p className="font-black text-[14px] mt-4">
-        Date:
-        <span className="font-normal ml-2">
-          {formData.invoiceDate}
-        </span>
-      </p>
+    <p className="font-black text-[14px] mt-4">
+      Date:
+      <span className="font-normal ml-2">
 
+        {
+          new Date(
+            new Date(formData.invoiceDate).setDate(
+              new Date(formData.invoiceDate).getDate() + 5
+            )
+          )
+            .toISOString()
+            .split("T")[0]
+        }
+
+      </span>
+    </p>
     </div>
 
   </div>
