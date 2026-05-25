@@ -967,7 +967,7 @@ const addRow = () => {
           colSpan={4}
           className="border border-black p-3 text-center"
         >
-          TOTALS
+          TOTAL
         </td>
 
         <td className="border border-black text-center">
