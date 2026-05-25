@@ -3,6 +3,8 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { FaClipboardCheck, FaCheckCircle, FaTimesCircle, FaBoxes, FaSearch, FaChartPie, FaChartBar, FaChevronLeft, FaChevronRight, FaFilter } from "react-icons/fa";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Legend, Bar } from "recharts";
 import { db } from "../../firebase/firebase";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const QCAnalyze = () => {
   const [loading, setLoading] = useState(true);
@@ -11,6 +13,169 @@ const QCAnalyze = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
 
+
+  // ======================================================
+// EXPORT EXCEL
+// ======================================================
+
+const exportToExcel = () => {
+
+  const exportData = [];
+
+  qcData.forEach((report) => {
+
+    report.rows?.forEach((row, index) => {
+
+      exportData.push({
+
+        "QC Number":
+          report.qcNumber,
+
+        "Vendor Name":
+          report.formData
+            ?.vendorName,
+
+        "Invoice No":
+          report.formData
+            ?.invoiceNo,
+
+        "Invoice Date":
+          report.formData
+            ?.invoiceDate,
+
+        "Vehicle No":
+          report.formData
+            ?.vehicleNo,
+
+        "Store Location":
+          report.formData
+            ?.storeLocation,
+
+        "Part No":
+          row.partNo,
+
+        Description:
+          row.description,
+
+        UOM:
+          row.uom,
+
+        Qty:
+          row.qty,
+
+        "Received Qty":
+          row.recdQty,
+
+        "Inspection Qty":
+          row.inspQty,
+
+        "Accepted Qty":
+          row.accQty,
+
+        "Rejected Qty":
+          row.rejQty,
+
+        Status:
+          row.status,
+
+        Remarks:
+          row.remarks,
+
+        "Inspected By":
+          report.signatures
+            ?.inspectedBy
+            ?.name,
+
+        "Verified By":
+          report.signatures
+            ?.verifiedBy
+            ?.name,
+
+        "Store Incharge":
+          report.signatures
+            ?.storeIncharge
+            ?.name,
+
+        "Approved By":
+          report.signatures
+            ?.approvedBy
+            ?.name,
+
+      });
+
+    });
+
+  });
+
+  // CREATE WORKSHEET
+
+  const worksheet =
+    XLSX.utils.json_to_sheet(
+      exportData
+    );
+
+  // COLUMN WIDTH
+
+  worksheet["!cols"] = [
+
+    { wch: 18 },
+    { wch: 25 },
+    { wch: 20 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 30 },
+    { wch: 18 },
+    { wch: 35 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 15 },
+    { wch: 15 },
+    { wch: 15 },
+    { wch: 15 },
+    { wch: 15 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 22 },
+
+  ];
+
+  // WORKBOOK
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "QC Reports"
+  );
+
+  // BUFFER
+
+  const excelBuffer =
+    XLSX.write(workbook, {
+
+      bookType: "xlsx",
+      type: "array",
+
+    });
+
+  const fileData =
+    new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+      }
+    );
+
+  saveAs(
+    fileData,
+    `QC_Reports.xlsx`
+  );
+};
   useEffect(() => {
     const fetchQCData = async () => {
       try {
@@ -112,6 +277,14 @@ const QCAnalyze = () => {
           </ResponsiveContainer>
         </div>
       </div>
+      <button
+        onClick={exportToExcel}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl font-black shadow-lg flex items-center gap-3"
+      >
+
+        Export Excel Sheet
+
+      </button>
 
       {/* Table Section */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">

@@ -8,6 +8,12 @@ import {
   addDoc,
   getDocs,
   Timestamp,
+  query,
+  orderBy,
+  limit,
+  doc,
+  runTransaction,
+  setDoc,
 } from "firebase/firestore";
 
 import {
@@ -98,47 +104,94 @@ const [rows, setRows] = useState([
     remarks: "GOOD",
   },
 ]);
-  // ======================================================
-  // GENERATE QC NUMBER
-  // ======================================================
 
-  useEffect(() => {
-    generateQCNumber();
-  }, []);
+// ======================================================
+// GENERATE UNIQUE QC NUMBER
+// ======================================================
 
-  const generateQCNumber =
-    async () => {
+// ======================================================
+// GENERATE SAFE QC NUMBER
+// ======================================================
 
-      try {
+const generateSafeQCNumber =
+  async () => {
 
-        const snapshot =
-          await getDocs(
-            collection(
-              db,
-              "qcReports"
-            )
-          );
+    try {
 
-        const count =
-          snapshot.size + 1;
-
-        const year =
-          new Date().getFullYear();
-
-        const formatted =
-          String(count).padStart(
-            4,
-            "0"
-          );
-
-        setQcNumber(
-          `GAL/QC/${year}/${formatted}`
+      const counterRef =
+        doc(
+          db,
+          "counters",
+          "qcCounter"
         );
 
-      } catch (error) {
-        console.log(error);
-      }
-    };
+      const newQC =
+        await runTransaction(
+          db,
+          async (transaction) => {
+
+            const counterDoc =
+              await transaction.get(
+                counterRef
+              );
+
+            // =====================================
+            // START FROM 147
+            // =====================================
+
+            let currentNumber = 147;
+
+            // EXISTING COUNTER
+
+            if (counterDoc.exists()) {
+
+              currentNumber =
+                counterDoc.data()
+                  .current || 147;
+            }
+
+            // NEXT NUMBER
+
+            const nextNumber =
+              currentNumber + 1;
+
+            // SAVE NEW COUNTER
+
+            transaction.set(
+              counterRef,
+              {
+                current: nextNumber,
+              }
+            );
+
+            // YEAR
+
+            const year =
+              new Date()
+                .getFullYear();
+
+            // FORMAT
+
+            const formatted =
+              String(nextNumber)
+                .padStart(4, "0");
+
+            // FINAL QC NUMBER
+
+            return `GAL/QC/${year}/${formatted}`;
+          }
+        );
+
+      return newQC;
+
+    } catch (error) {
+
+      console.log(error);
+
+      return null;
+    }
+  };
+
 
   // ======================================================
   // FORM CHANGE
@@ -157,7 +210,11 @@ const [rows, setRows] = useState([
 // DOWNLOAD PDF
 // ======================================================
 
-const downloadPDF = () => {
+// ======================================================
+// DOWNLOAD PDF
+// ======================================================
+
+const downloadPDF = async () => {
 
   const element =
     document.getElementById(
@@ -165,16 +222,25 @@ const downloadPDF = () => {
     );
 
   if (!element) {
+
     alert("Preview not found");
+
     return;
   }
+
+  // WAIT RENDER
+
+  await new Promise(
+    (resolve) =>
+      setTimeout(resolve, 500)
+  );
 
   const options = {
 
     margin: 0,
 
     filename:
-      `${qcNumber}.pdf`,
+      `${formData.invoiceNo || qcNumber}.pdf`,
 
     image: {
       type: "jpeg",
@@ -192,12 +258,80 @@ const downloadPDF = () => {
       format: "a4",
       orientation: "portrait",
     },
+
+    // PAGE BREAK FIX
+
+    pagebreak: {
+
+      mode: [
+        "avoid-all",
+        "css",
+        "legacy",
+      ],
+
+      avoid: [
+        ".signature-section",
+      ],
+    },
   };
 
-  html2pdf()
+  await html2pdf()
     .set(options)
     .from(element)
     .save();
+
+  // ==========================================
+  // AUTO RESET AFTER DOWNLOAD
+  // ==========================================
+
+// ==========================================
+// AUTO RESET AFTER DOWNLOAD
+// ==========================================
+
+  setTimeout(async () => {
+
+    // RESET FORM
+
+    setFormData({
+      vendorName: "",
+      invoiceNo: "",
+      invoiceDate: getTodayDate(),
+      vehicleNo: "N/A",
+      storeLocation: "",
+    });
+
+    // RESET ROWS
+
+    setRows([
+      {
+        partNo: "",
+        description: "",
+        uom: "NOS",
+        qty: "",
+        recdQty: "",
+        inspQty: "",
+        accQty: "",
+        rejQty: 0,
+        status: "Pass",
+        remarks: "GOOD",
+      },
+    ]);
+
+    // NEW QC NUMBER
+
+    const newQC =
+      await generateSafeQCNumber();
+
+    setQcNumber(newQC);
+
+    // SCROLL TOP
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+  }, 1000);
 };
 
   // ======================================================
@@ -356,40 +490,150 @@ const addRow = () => {
   // SAVE QC
   // ======================================================
 
-  const handleSubmit =
-    async () => {
 
-      try {
 
-        await addDoc(
+const handleSubmit =
+  async () => {
+
+    try {
+
+      // ==========================================
+      // VALIDATION
+      // ==========================================
+
+      if (
+        !formData.invoiceNo
+      ) {
+
+        alert(
+          "Invoice Number Required"
+        );
+
+        return;
+      }
+
+      // ==========================================
+      // CHECK DUPLICATE INVOICE
+      // ==========================================
+
+      const snapshot =
+        await getDocs(
           collection(
             db,
             "qcReports"
-          ),
+          )
+        );
 
-          {
-            qcNumber,
-            formData,
-            rows,
-            signatures,
-            createdAt:
-              Timestamp.now(),
+      const duplicateInvoice =
+        snapshot.docs.find(
+          (doc) => {
+
+            const data =
+              doc.data();
+
+            return (
+              data
+                ?.formData
+                ?.invoiceNo
+                ?.trim()
+                ?.toLowerCase() ===
+              formData
+                ?.invoiceNo
+                ?.trim()
+                ?.toLowerCase()
+            );
           }
         );
 
-        alert(
-          "QC Report Saved Successfully"
-        );
+      // DUPLICATE FOUND
 
-      } catch (error) {
-
-        console.log(error);
+      if (
+        duplicateInvoice
+      ) {
 
         alert(
-          "Error Saving QC"
+          "Duplicate Invoice Number Already Exists"
         );
+
+        return;
       }
-    };
+
+    
+
+      
+
+// ==========================================
+// SAFE QC NUMBER
+// ==========================================
+
+const finalQCNumber =
+  await generateSafeQCNumber();
+
+if (!finalQCNumber) {
+
+  alert(
+    "Failed To Generate QC Number"
+  );
+
+  return;
+}
+      // ==========================================
+      // SAVE DATA
+      // ==========================================
+
+      await addDoc(
+        collection(
+          db,
+          "qcReports"
+        ),
+
+        {
+          qcNumber:
+            finalQCNumber,
+
+          formData,
+
+          rows,
+
+          signatures,
+
+          createdAt:
+            Timestamp.now(),
+        }
+      );
+
+      // UPDATE UI QC NUMBER
+
+    // UPDATE CURRENT QC
+
+setQcNumber(
+  finalQCNumber
+);
+      alert(
+        "QC Report Saved Successfully"
+      );
+
+      // ==========================================
+      // DOWNLOAD PDF
+      // ==========================================
+
+      setTimeout(() => {
+
+        downloadPDF(
+          finalQCNumber
+        );
+
+      }, 1000);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Error Saving QC"
+      );
+    }
+  };
 
   // ======================================================
   // TOTALS
@@ -1001,12 +1245,25 @@ const addRow = () => {
 
 </div>
 
+<div
+  style={{
+    pageBreakBefore:
+      rows.length > 8
+        ? "always"
+        : "auto",
+  }}
+></div>
 {/* =====================================================
     AUTHORIZATION SECTION
 ===================================================== */}
 
-<div className="mt-10 border border-black mb-10">
-
+<div
+  className="mt-10 border border-black mb-10 signature-section"
+  style={{
+    pageBreakInside: "avoid",
+    breakInside: "avoid",
+  }}
+>
   <div className="bg-[#071633] text-white text-center py-4 border-t-4 border-orange-400">
 
     <h2 className="text-[16px] font-black">

@@ -10,6 +10,7 @@ import {
   getDocs,
   orderBy,
   query,
+  updateDoc,
 } from "firebase/firestore";
 
 import { Link } from "react-router-dom";
@@ -212,6 +213,8 @@ const QCHistory = () => {
     }
   };
 
+
+
   // ======================================================
   // LOADING
   // ======================================================
@@ -346,12 +349,23 @@ const QCHistory = () => {
           to="/qc/create"
           className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white px-7 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg"
         >
+          
 
           <FaPlus />
 
           Create QC
 
         </Link>
+        {/* <button
+            onClick={
+              cleanDuplicateInvoices
+            }
+            className="bg-red-600 hover:bg-red-700 transition-all duration-200 text-white px-7 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg"
+          >
+
+            Remove Duplicates
+
+          </button> */}
 
       </div>
 
